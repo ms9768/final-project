@@ -172,3 +172,291 @@ h1 {
     padding: 18px;
   }
 }
+
+
+.file-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e1e6f0;
+}
+
+.file-item .file-link {
+  flex: 1;
+  min-width: 0;
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: #edf0ff;
+  color: #4053b0;
+  text-decoration: none;
+}
+
+.download-link:hover {
+  background: #dfe5ff;
+}
+
+.preview-link {
+  font-size: 0.9rem;
+  color: #4053b0;
+  text-decoration: none;
+}
+
+.preview-link:hover {
+  text-decoration: underline;
+}
+
+
+
+
+
+.file-name-button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #4053b0;
+  text-align: right;
+  text-decoration: underline;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.file-name-button:hover {
+  color: #293b92;
+}
+
+.preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(20 28 45 / 65%);
+}
+
+.preview-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(900px, 100%);
+  max-height: 90vh;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 25%);
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e1e6f0;
+}
+
+.preview-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.preview-close {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f2f8;
+  color: #243047;
+  font-size: 1.2rem;
+}
+
+.preview-toolbar {
+  padding: 12px 24px;
+  border-bottom: 1px solid #e1e6f0;
+}
+
+.preview-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #edf0ff;
+  color: #4053b0;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.preview-body {
+  padding: 24px;
+  overflow: auto;
+  min-height: 180px;
+}
+
+.document-content {
+  max-width: 100%;
+  color: #243047;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.document-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.document-content th,
+.document-content td {
+  padding: 8px;
+  border: 1px solid #cfd6e5;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .preview-backdrop {
+    padding: 8px;
+  }
+
+  .preview-modal {
+    max-height: 95vh;
+  }
+
+  .preview-header,
+  .preview-toolbar,
+  .preview-body {
+    padding: 14px;
+  }
+}
+
+.admin-section {
+  margin: 24px 0;
+}
+
+.admin-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 24px;
+  border: 1px solid #d8dce5;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.admin-form label {
+  font-weight: 600;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #cbd0da;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.admin-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.admin-form button,
+.admin-section > button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.admin-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+.lesson-text-content,
+.lesson-content-file {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #d8dce5;
+  border-radius: 8px;
+}
+
+.lesson-text-content h4,
+.lesson-content-file h4 {
+  margin-top: 0;
+}
+
+.lesson-content-file a {
+  display: inline-block;
+  margin: 8px 12px 0 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #eef2ff;
+  color: #243b80;
+  text-decoration: none;
+}
+
+.lesson-content-file a:hover {
+  text-decoration: underline;
+}
+
+
+.preview-pdf {
+  display: block;
+  width: 100%;
+  height: 70vh;
+  min-height: 400px;
+  border: none;
+  background: white;
+}
+
+
+.lesson-management-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.lesson-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.lesson-action-button:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+.lesson-action-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+

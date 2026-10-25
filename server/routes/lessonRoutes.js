@@ -1,12 +1,19 @@
+
 const express = require("express");
 const router = express.Router();
 const Lesson = require("../models/Lesson");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const mammoth = require("mammoth");
+const sanitizeHtml = require("sanitize-html");
+const { execFile } = require("child_process");
+const { promisify } = require("util");
+const os = require("os");
 
+const runCommand = promisify(execFile);
 
-//הגדרות העלאת קבצים
+// הגדרות העלאת קבצים
 const uploadDir = path.join(__dirname, "../uploads");
 
 if (!fs.existsSync(uploadDir)) {
@@ -21,7 +28,10 @@ const storage = multer.diskStorage({
         const uniqueName =
             Date.now() + "-" + Math.round(Math.random() * 1e9);
 
-        cb(null, uniqueName + path.extname(file.originalname).toLowerCase());
+        cb(
+            null,
+            uniqueName + path.extname(file.originalname).toLowerCase()
+        );
     }
 });
 
@@ -32,7 +42,6 @@ const upload = multer({
     },
     fileFilter: (req, file, cb) => {
         const allowedExtensions = [".pdf", ".doc", ".docx"];
-
         const extension = path.extname(file.originalname).toLowerCase();
 
         if (allowedExtensions.includes(extension)) {
@@ -43,8 +52,120 @@ const upload = multer({
     }
 });
 
+// תצוגה מקדימה של PDF, DOCX ו-DOC
+router.get("/preview/:filename", async (req, res) => {
+    let tempDir;
 
+    try {
+        const filename = req.params.filename;
 
+        // בדיקה שהשם מתאים לקובץ שנוצר בהעלאה
+        if (!/^\d+-\d+\.(pdf|doc|docx)$/i.test(filename)) {
+            return res.status(400).json({
+                message: "Invalid file name"
+            });
+        }
+
+        const filePath = path.join(uploadDir, filename);
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({
+                message: "File not found"
+            });
+        }
+
+        const extension = path.extname(filename).toLowerCase();
+
+        // PDF: שליחת הקובץ המקורי לדפדפן
+        if (extension === ".pdf") {
+            return res.type("application/pdf").sendFile(filePath);
+        }
+
+        // DOCX: המרה ל-HTML
+        if (extension === ".docx") {
+            const result = await mammoth.convertToHtml({
+                path: filePath
+            });
+
+            const safeHtml = sanitizeHtml(result.value, {
+                allowedTags: [
+                    "p", "br", "strong", "em", "u",
+                    "h1", "h2", "h3", "ul", "ol", "li",
+                    "table", "thead", "tbody", "tr", "th", "td"
+                ],
+                allowedAttributes: {}
+            });
+
+            return res.status(200).json({
+                filename,
+                type: "html",
+                html: safeHtml
+            });
+        }
+
+        // DOC: המרה ל-PDF באמצעות LibreOffice
+        tempDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), "lesson-preview-")
+        );
+
+        const sofficePath =
+            "C:\\Program Files\\LibreOffice\\program\\soffice.com";
+
+        await runCommand(sofficePath, [
+            "--headless",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            tempDir,
+            filePath
+        ]);
+
+        const pdfPath = path.join(
+            tempDir,
+            path.parse(filename).name + ".pdf"
+        );
+
+        if (!fs.existsSync(pdfPath)) {
+            throw new Error("PDF conversion failed");
+        }
+
+        // שליחת ה-PDF לדפדפן ולאחר מכן ניקוי התיקייה הזמנית
+        res.type("application/pdf");
+
+        res.sendFile(pdfPath, (error) => {
+            if (tempDir && fs.existsSync(tempDir)) {
+                fs.rmSync(tempDir, {
+                    recursive: true,
+                    force: true
+                });
+            }
+
+            if (error && !res.headersSent) {
+                res.status(500).json({
+                    message: "Failed to send preview"
+                });
+            }
+        });
+    } catch (error) {
+        if (tempDir && fs.existsSync(tempDir)) {
+            fs.rmSync(tempDir, {
+                recursive: true,
+                force: true
+            });
+        }
+
+        console.error("Preview failed:", error.message);
+
+        if (!res.headersSent) {
+            res.status(500).json({
+                message: "Failed to preview document",
+                error: error.message
+            });
+        }
+    }
+});
+
+// קבלת מערך שיעור לפי מזהה
 router.get("/:id", async (req, res) => {
     try {
         const lesson = await Lesson.findById(req.params.id);
@@ -64,12 +185,9 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-
-
 // קבלת מערכי השיעור המוצגים באתר
 router.get("/", async (req, res) => {
     try {
-
         const search = req.query.search?.trim();
         const track = req.query.track?.trim();
 
@@ -90,7 +208,6 @@ router.get("/", async (req, res) => {
 
         const lessons = await Lesson.find(filter)
             .sort({ createdAt: -1 });
-
 
         res.status(200).json(lessons);
     } catch (error) {
@@ -115,10 +232,7 @@ router.post("/", async (req, res) => {
     }
 });
 
-
-
-
-/* עדכון מערך שיעור קיים */
+// עדכון מערך שיעור קיים
 router.put("/:id", async (req, res) => {
     try {
         const lesson = await Lesson.findByIdAndUpdate(
@@ -145,9 +259,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-
-
-/* הסתרת מערך שיעור */
+// הסתרת מערך שיעור
 router.patch("/:id/hide", async (req, res) => {
     try {
         const lesson = await Lesson.findByIdAndUpdate(
@@ -174,10 +286,7 @@ router.patch("/:id/hide", async (req, res) => {
     }
 });
 
-
-
-
-/* מחיקת מערך שיעור */
+// מחיקת מערך שיעור
 router.delete("/:id", async (req, res) => {
     try {
         const lesson = await Lesson.findByIdAndDelete(req.params.id);
@@ -200,10 +309,7 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-
-
-
-/* העלאת קובץ למערכת */
+// העלאת קובץ למערכת
 router.post("/upload", (req, res) => {
     upload.single("file")(req, res, (error) => {
         if (error) {
@@ -228,9 +334,5 @@ router.post("/upload", (req, res) => {
         });
     });
 });
-
-
-
-
 
 module.exports = router;
