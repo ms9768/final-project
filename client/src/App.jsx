@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import './App.css'
 import PreviewModal from './components/PreviewModal'
@@ -19,6 +20,7 @@ function App() {
   const [previewPdfUrl, setPreviewPdfUrl] = useState('')
 
   const [showAdminForm, setShowAdminForm] = useState(false)
+  const [showCoordinatorView, setShowCoordinatorView] = useState(false)
   const [editingLessonId, setEditingLessonId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
@@ -35,6 +37,7 @@ function App() {
   const [contentFile, setContentFile] = useState(null)
   const [attachmentFiles, setAttachmentFiles] = useState([])
 
+  // טעינת מערכי השיעור בהתאם לתצוגה, לחיפוש ולמסלול
   useEffect(() => {
     async function fetchLessons() {
       try {
@@ -52,7 +55,12 @@ function App() {
         }
 
         const query = params.toString()
-        const url = query ? `${API_URL}?${query}` : API_URL
+
+        const url = showCoordinatorView
+          ? `${API_URL}/admin/all${query ? `?${query}` : ''}`
+          : query
+            ? `${API_URL}?${query}`
+            : API_URL
 
         const response = await fetch(url)
 
@@ -70,9 +78,9 @@ function App() {
     }
 
     fetchLessons()
-  }, [search, track])
+  }, [search, track, showCoordinatorView])
 
-
+  // פתיחת קובץ לתצוגה מקדימה
   async function openPreview(file) {
     setPreviewFile(file)
     setPreviewHtml('')
@@ -105,7 +113,6 @@ function App() {
       if (contentType.includes('application/pdf')) {
         const blob = await response.blob()
         const pdfUrl = URL.createObjectURL(blob)
-
         setPreviewPdfUrl(pdfUrl)
       } else {
         const data = await response.json()
@@ -113,7 +120,6 @@ function App() {
       }
     } catch (error) {
       console.error('Preview failed:', error)
-
       setPreviewError(
         'לא הצלחנו להציג את הקובץ. אפשר לנסות להוריד אותו.'
       )
@@ -122,8 +128,7 @@ function App() {
     }
   }
 
-
-
+  // סגירת חלון התצוגה המקדימה
   function closePreview() {
     if (previewPdfUrl) {
       URL.revokeObjectURL(previewPdfUrl)
@@ -136,8 +141,7 @@ function App() {
     setPreviewLoading(false)
   }
 
-
-
+  // הכנת טופס לעריכת מערך קיים
   function startEditLesson(lesson) {
     setEditingLessonId(lesson._id)
 
@@ -161,9 +165,7 @@ function App() {
     })
   }
 
-
-
-
+  // עדכון שדות הטופס
   function handleFormChange(event) {
     const { name, value } = event.target
 
@@ -173,6 +175,7 @@ function App() {
     }))
   }
 
+  // העלאת קובץ לשרת
   async function uploadFile(file) {
     const data = new FormData()
     data.append('file', file)
@@ -191,6 +194,7 @@ function App() {
     return result.file
   }
 
+  // שמירת מערך חדש או עדכון מערך קיים
   async function handleSaveLesson(event) {
     event.preventDefault()
 
@@ -199,7 +203,6 @@ function App() {
     setSaveError('')
 
     try {
-
       const existingLesson = editingLessonId
         ? lessons.find((lesson) => lesson._id === editingLessonId)
         : null
@@ -212,7 +215,6 @@ function App() {
       const uploadedAttachments = existingLesson?.files
         ? [...existingLesson.files]
         : []
-
 
       if (contentFile) {
         uploadedContentFile = await uploadFile(contentFile)
@@ -239,13 +241,16 @@ function App() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(lessonData),
-        })
+        }
+      )
 
       const result = await response.json()
 
       if (!response.ok) {
         throw new Error(result.message || 'שמירת מערך השיעור נכשלה')
       }
+
+      const wasEditing = Boolean(editingLessonId)
 
       setFormData({
         title: '',
@@ -260,16 +265,33 @@ function App() {
       setContentFile(null)
       setAttachmentFiles([])
       setSaveMessage(
-        editingLessonId
+        wasEditing
           ? 'השינויים נשמרו בהצלחה!'
           : 'מערך השיעור נשמר בהצלחה!'
       )
 
-      // ניקוי שדות בחירת הקבצים בטופס
       event.target.reset()
 
-      // טעינת הרשימה מחדש
-      const lessonsResponse = await fetch(API_URL)
+      // טעינת הרשימה בהתאם לתצוגה הנוכחית
+      const params = new URLSearchParams()
+
+      if (search.trim()) {
+        params.set('search', search.trim())
+      }
+
+      if (track) {
+        params.set('track', track)
+      }
+
+      const query = params.toString()
+
+      const url = showCoordinatorView
+        ? `${API_URL}/admin/all${query ? `?${query}` : ''}`
+        : query
+          ? `${API_URL}?${query}`
+          : API_URL
+
+      const lessonsResponse = await fetch(url)
 
       if (lessonsResponse.ok) {
         const lessonsData = await lessonsResponse.json()
@@ -282,30 +304,23 @@ function App() {
     }
   }
 
-
+  // הסתרת מערך שיעור
   async function hideLesson(lessonId) {
     const confirmed = window.confirm(
       'האם להסתיר את מערך השיעור? הוא לא יימחק מהמערכת.'
     )
 
-    if (!confirmed) {
-      return
-    }
+    if (!confirmed) return
 
     try {
-      const response = await fetch(
-        `${API_URL}/${lessonId}/hide`,
-        {
-          method: 'PATCH',
-        }
-      )
+      const response = await fetch(`${API_URL}/${lessonId}/hide`, {
+        method: 'PATCH',
+      })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(
-          result.message || 'הסתרת מערך השיעור נכשלה'
-        )
+        throw new Error(result.message || 'הסתרת מערך השיעור נכשלה')
       }
 
       setLessons((previous) =>
@@ -316,29 +331,56 @@ function App() {
     }
   }
 
+  // הצגה מחדש של מערך שיעור
+  async function showLesson(lessonId) {
+    const confirmed = window.confirm(
+      'האם להציג מחדש את מערך השיעור?'
+    )
+
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`${API_URL}/${lessonId}/show`, {
+        method: 'PATCH',
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'הצגת מערך השיעור נכשלה')
+      }
+
+      setLessons((previous) =>
+        previous.map((lesson) =>
+          lesson._id === lessonId
+            ? { ...lesson, isVisible: true }
+            : lesson
+        )
+      )
+
+      window.alert('מערך השיעור חזר להיות גלוי')
+    } catch (error) {
+      window.alert(error.message || 'אירעה שגיאה בהצגת המערך')
+    }
+  }
+
+  // מחיקת מערך שיעור
   async function deleteLesson(lessonId) {
     const confirmed = window.confirm(
       'האם למחוק את מערך השיעור לצמיתות? לא ניתן לבטל את הפעולה.'
     )
 
-    if (!confirmed) {
-      return
-    }
+    if (!confirmed) return
 
     try {
-      const response = await fetch(
-        `${API_URL}/${lessonId}`,
-        {
-          method: 'DELETE',
-        }
-      )
+      const response = await fetch(`${API_URL}/${lessonId}`, {
+        method: 'DELETE',
+      })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(
-          result.message || 'מחיקת מערך השיעור נכשלה'
-        )
+        throw new Error(result.message || 'מחיקת מערך השיעור נכשלה')
       }
 
       setLessons((previous) =>
@@ -349,120 +391,159 @@ function App() {
     }
   }
 
+  // ניקוי כתובת PDF זמנית בעת סגירת הרכיב
+  useEffect(() => {
+    return () => {
+      if (previewPdfUrl) {
+        URL.revokeObjectURL(previewPdfUrl)
+      }
+    }
+  }, [previewPdfUrl])
 
   return (
     <main className="page" dir="rtl">
       <section className="admin-section">
+        {/* כפתור המעבר תמיד גלוי */}
         <button
           type="button"
           onClick={() => {
-            setShowAdminForm((previous) => !previous)
+            setShowCoordinatorView((previous) => !previous)
+            setShowAdminForm(false)
             setSaveMessage('')
             setSaveError('')
           }}
         >
-          {showAdminForm ? 'סגירת טופס הניהול' : 'הוספת מערך שיעור'}
+          {showCoordinatorView
+            ? 'מעבר לתצוגת המורות'
+            : 'מעבר לתצוגת הרכזת'}
         </button>
 
-        {showAdminForm && (
-          <form className="admin-form" onSubmit={handleSaveLesson}>
-            <h2>
-              {editingLessonId
-                ? 'עריכת מערך שיעור'
-                : 'הוספת מערך שיעור חדש'}
-            </h2>
-
-            <label htmlFor="lesson-title">שם מערך השיעור</label>
-            <input
-              id="lesson-title"
-              name="title"
-              value={formData.title}
-              onChange={handleFormChange}
-              required
-            />
-
-            <label htmlFor="lesson-description">תיאור</label>
-            <textarea
-              id="lesson-description"
-              name="description"
-              value={formData.description}
-              onChange={handleFormChange}
-              required
-            />
-
-            <label htmlFor="lesson-track">מסלול</label>
-            <select
-              id="lesson-track"
-              name="track"
-              value={formData.track}
-              onChange={handleFormChange}
-              required
+        {/* כלי הניהול גלויים רק בתצוגת הרכזת */}
+        {showCoordinatorView && (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setShowAdminForm((previous) => !previous)
+                setSaveMessage('')
+                setSaveError('')
+              }}
             >
-              <option value="">בחירת מסלול</option>
-              <option value="פיתוח">פיתוח</option>
-              <option value="ארוך">ארוך</option>
-              <option value="קצר">קצר</option>
-              <option value="קיץ">קיץ</option>
-            </select>
-
-            <label htmlFor="lesson-content">תוכן השיעור בטקסט</label>
-            <textarea
-              id="lesson-content"
-              name="content"
-              value={formData.content}
-              onChange={handleFormChange}
-              placeholder="אפשר להשאיר ריק אם מעלים מסמך"
-            />
-
-            <label htmlFor="lesson-content-file">
-              מסמך המכיל את תוכן השיעור (Word או PDF)
-            </label>
-            <input
-              id="lesson-content-file"
-              type="file"
-              accept=".doc,.docx,.pdf"
-              onChange={(event) =>
-                setContentFile(event.target.files?.[0] || null)
-              }
-            />
-
-            <label htmlFor="lesson-notes">הנחיות והערות למנחה</label>
-            <textarea
-              id="lesson-notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleFormChange}
-            />
-
-            <label htmlFor="lesson-attachments">קבצים מצורפים נוספים</label>
-            <input
-              id="lesson-attachments"
-              type="file"
-              accept=".doc,.docx,.pdf"
-              multiple
-              onChange={(event) =>
-                setAttachmentFiles(Array.from(event.target.files || []))
-              }
-            />
-
-            <button type="submit" disabled={saving}>
-              {saving
-                ? 'שומר...'
-                : editingLessonId
-                  ? 'שמירת השינויים'
-                  : 'שמירת מערך השיעור'}
+              {showAdminForm
+                ? 'סגירת טופס הניהול'
+                : 'הוספת מערך שיעור'}
             </button>
 
-            {saveMessage && (
-              <p className="status-message">{saveMessage}</p>
-            )}
+            {showAdminForm && (
+              <form className="admin-form" onSubmit={handleSaveLesson}>
+                <h2>
+                  {editingLessonId
+                    ? 'עריכת מערך שיעור'
+                    : 'הוספת מערך שיעור חדש'}
+                </h2>
 
-            {saveError && (
-              <p className="status-message error">{saveError}</p>
+                <label htmlFor="lesson-title">שם מערך השיעור</label>
+                <input
+                  id="lesson-title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleFormChange}
+                  required
+                />
+
+                <label htmlFor="lesson-description">תיאור</label>
+                <textarea
+                  id="lesson-description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleFormChange}
+                  required
+                />
+
+                <label htmlFor="lesson-track">מסלול</label>
+                <select
+                  id="lesson-track"
+                  name="track"
+                  value={formData.track}
+                  onChange={handleFormChange}
+                  required
+                >
+                  <option value="">בחירת מסלול</option>
+                  <option value="פיתוח">פיתוח</option>
+                  <option value="ארוך">ארוך</option>
+                  <option value="קצר">קצר</option>
+                  <option value="קיץ">קיץ</option>
+                </select>
+
+                <label htmlFor="lesson-content">
+                  תוכן השיעור בטקסט
+                </label>
+                <textarea
+                  id="lesson-content"
+                  name="content"
+                  value={formData.content}
+                  onChange={handleFormChange}
+                  placeholder="אפשר להשאיר ריק אם מעלים מסמך"
+                />
+
+                <label htmlFor="lesson-content-file">
+                  מסמך המכיל את תוכן השיעור (Word או PDF)
+                </label>
+                <input
+                  id="lesson-content-file"
+                  type="file"
+                  accept=".doc,.docx,.pdf"
+                  onChange={(event) =>
+                    setContentFile(event.target.files?.[0] || null)
+                  }
+                />
+
+                <label htmlFor="lesson-notes">
+                  הנחיות והערות למנחה
+                </label>
+                <textarea
+                  id="lesson-notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleFormChange}
+                />
+
+                <label htmlFor="lesson-attachments">
+                  קבצים מצורפים נוספים
+                </label>
+                <input
+                  id="lesson-attachments"
+                  type="file"
+                  accept=".doc,.docx,.pdf"
+                  multiple
+                  onChange={(event) =>
+                    setAttachmentFiles(
+                      Array.from(event.target.files || [])
+                    )
+                  }
+                />
+
+                <button type="submit" disabled={saving}>
+                  {saving
+                    ? 'שומר...'
+                    : editingLessonId
+                      ? 'שמירת השינויים'
+                      : 'שמירת מערך השיעור'}
+                </button>
+
+                {saveMessage && (
+                  <p className="status-message">{saveMessage}</p>
+                )}
+
+                {saveError && (
+                  <p className="status-message error">{saveError}</p>
+                )}
+              </form>
             )}
-          </form>
+          </>
         )}
       </section>
+
       <header className="page-header">
         <div>
           <p className="eyebrow">מאגר ידע ולמידה</p>
@@ -492,6 +573,9 @@ function App() {
           >
             <option value="">כל המסלולים</option>
             <option value="פיתוח">פיתוח</option>
+            <option value="ארוך">ארוך</option>
+            <option value="קצר">קצר</option>
+            <option value="קיץ">קיץ</option>
           </select>
         </div>
       </section>
@@ -516,7 +600,6 @@ function App() {
             נמצאו {lessons.length} מערכי שיעור
           </p>
 
-
           <section className="lessons-grid">
             {lessons.map((lesson) => (
               <LessonCard
@@ -524,15 +607,15 @@ function App() {
                 lesson={lesson}
                 onPreview={openPreview}
                 onHide={hideLesson}
+                onShow={showLesson}
                 onDelete={deleteLesson}
                 onEdit={startEditLesson}
+                showManagementButtons={showCoordinatorView}
               />
             ))}
           </section>
-
         </>
       )}
-
 
       <PreviewModal
         previewFile={previewFile}
@@ -542,7 +625,6 @@ function App() {
         previewError={previewError}
         onClose={closePreview}
       />
-
     </main>
   )
 }

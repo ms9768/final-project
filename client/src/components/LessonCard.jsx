@@ -1,48 +1,63 @@
+import Comments from './Comments'
 
 function LessonCard({
     lesson,
     onPreview,
     onHide,
+    onShow,
     onDelete,
     onEdit,
+    showManagementButtons
 }) {
     return (
         <article className="lesson-card">
             <span className="track-label">{lesson.track}</span>
 
+            {showManagementButtons && (
+                <div className="lesson-management-actions">
+                    <button
+                        type="button"
+                        className="lesson-action-button edit-button"
+                        onClick={() => onEdit(lesson)}
+                        title="עריכת מערך השיעור"
+                        aria-label="עריכת מערך השיעור"
+                    >
+                        ✏️
+                    </button>
 
-            <div className="lesson-management-actions">
-                <button
-                    type="button"
-                    className="lesson-action-button edit-button"
-                    onClick={() => onEdit(lesson)}
-                    title="עריכת מערך השיעור"
-                    aria-label="עריכת מערך השיעור"
-                >
-                    ✏️
-                </button>
+                    {lesson.isVisible ? (
+                        <button
+                            type="button"
+                            className="lesson-action-button hide-button"
+                            onClick={() => onHide(lesson._id)}
+                            title="הסתרת מערך השיעור"
+                            aria-label="הסתרת מערך השיעור"
+                        >
+                            🔓
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            className="lesson-action-button hide-button"
+                            onClick={() => onShow(lesson._id)}
+                            title="הצגת מערך השיעור"
+                            aria-label="הצגת מערך השיעור"
+                        >
+                            🔒
+                        </button>
+                    )}
 
-                <button
-                    type="button"
-                    className="lesson-action-button hide-button"
-                    onClick={() => onHide(lesson._id)}
-                    title="הסתרת מערך השיעור"
-                    aria-label="הסתרת מערך השיעור"
-                >
-                    👁️‍🗨️
-                </button>
-
-                <button
-                    type="button"
-                    className="lesson-action-button delete-button"
-                    onClick={() => onDelete(lesson._id)}
-                    title="מחיקת מערך השיעור"
-                    aria-label="מחיקת מערך השיעור"
-                >
-                    🗑️
-                </button>
-            </div>
-
+                    <button
+                        type="button"
+                        className="lesson-action-button delete-button"
+                        onClick={() => onDelete(lesson._id)}
+                        title="מחיקת מערך השיעור"
+                        aria-label="מחיקת מערך השיעור"
+                    >
+                        🗑️
+                    </button>
+                </div>
+            )}
 
             <h2>{lesson.title}</h2>
 
@@ -122,6 +137,7 @@ function LessonCard({
                     )}
                 </details>
             )}
+            <Comments lessonId={lesson._id} />
         </article>
     )
 }

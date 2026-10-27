@@ -185,6 +185,24 @@ router.get("/:id", async (req, res) => {
     }
 });
 
+
+
+// קבלת כל מערכי השיעור למסך הניהול
+router.get("/admin/all", async (req, res) => {
+    try {
+        const lessons = await Lesson.find()
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(lessons);
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to retrieve all lessons",
+            error: error.message
+        });
+    }
+});
+
+
 // קבלת מערכי השיעור המוצגים באתר
 router.get("/", async (req, res) => {
     try {
@@ -285,6 +303,39 @@ router.patch("/:id/hide", async (req, res) => {
         });
     }
 });
+
+
+
+ // החזרת מערך שיעור למצב גלוי
+router.patch("/:id/show", async (req, res) => {
+    try {
+        const lesson = await Lesson.findByIdAndUpdate(
+            req.params.id,
+            { isVisible: true },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!lesson) {
+            return res.status(404).json({
+                message: "Lesson not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Lesson is visible again",
+            lesson
+        });
+    } catch (error) {
+        res.status(400).json({
+            message: "Failed to show lesson",
+            error: error.message
+        });
+    }
+});
+
 
 // מחיקת מערך שיעור
 router.delete("/:id", async (req, res) => {
