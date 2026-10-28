@@ -19,6 +19,7 @@ const EMPTY_FORM = {
 function App() {
 
   const lessonIdFromUrl = new URLSearchParams(window.location.search).get('lessonId')
+  const isCoordinatorFromUrl = new URLSearchParams(window.location.search).get('coordinator') === 'true'
 
   const [openedLesson, setOpenedLesson] = useState(null)
   const [detailLoading, setDetailLoading] = useState(Boolean(lessonIdFromUrl))
@@ -396,6 +397,7 @@ function App() {
           <LessonDetails
             lesson={openedLesson}
             onPreview={openPreview}
+            isCoordinator={isCoordinatorFromUrl}
           />
         ) : (
           <p className="status-message">לא נמצא מערך שיעור.</p>
@@ -470,7 +472,6 @@ function App() {
               סינון לפי מסלול
               <select value={track} onChange={(event) => setTrack(event.target.value)}>
                 <option value="">כל המסלולים</option>
-                <option value="פיתוח">פיתוח</option>
                 <option value="ארוך">מסלול ארוך</option>
                 <option value="קצר">מסלול קצר</option>
                 <option value="קיץ">מסלול קיץ</option>
@@ -552,7 +553,6 @@ function App() {
                     required
                   >
                     <option value="">בחירת מסלול</option>
-                    <option value="פיתוח">פיתוח</option>
                     <option value="ארוך">ארוך</option>
                     <option value="קצר">קצר</option>
                     <option value="קיץ">קיץ</option>

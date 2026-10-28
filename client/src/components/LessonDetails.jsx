@@ -1,7 +1,7 @@
 
 import Comments from './Comments'
 
-function LessonDetails({ lesson, onPreview }) {
+function LessonDetails({ lesson, onPreview, isCoordinator = false }) {
   return (
     <section className="lesson-details-page" dir="rtl">
       <button
@@ -97,8 +97,10 @@ function LessonDetails({ lesson, onPreview }) {
         )}
 
         <section className="lesson-detail-section">
-          <Comments lessonId={lesson._id} />
-        </section>
+          <Comments
+            lessonId={lesson._id}
+            showManagementButtons={isCoordinator}
+          />        </section>
       </article>
     </section>
   )

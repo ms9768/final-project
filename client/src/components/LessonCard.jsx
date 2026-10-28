@@ -8,7 +8,14 @@ function LessonCard({
   showManagementButtons,
 }) {
   function openLessonDetails() {
-    const url = `${window.location.origin}${window.location.pathname}?lessonId=${encodeURIComponent(lesson._id)}`
+    const params = new URLSearchParams()
+    params.set('lessonId', lesson._id)
+
+    if (showManagementButtons) {
+      params.set('coordinator', 'true')
+    }
+
+    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
@@ -44,7 +51,7 @@ function LessonCard({
               title="הצגת מערך השיעור"
               aria-label="הצגת מערך השיעור"
             >
-              👁️
+              🔓
             </button>
           )}
 

@@ -1484,5 +1484,165 @@ h1 {
 }
 
 
+/* ===== עיצוב אזור התגובות ===== */
+
+.comments-section {
+  margin-top: 28px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e0e7f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(31, 52, 84, 0.05);
+}
+
+.comments-section h3 {
+  margin: 0 0 18px;
+  color: #243b63;
+  font-size: 1.4rem;
+}
+
+.comments-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.comments-section button {
+  padding: 8px 13px;
+  border: 1px solid #d4deed;
+  border-radius: 8px;
+  background: #f2f6ff;
+  color: #315da8;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.comments-section button:hover {
+  background: #e1eaff;
+}
+
+.comments-section button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.comment-form {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+  padding: 20px;
+  background: #f8faff;
+  border: 1px solid #e0e7f0;
+  border-radius: 12px;
+}
+
+.comment-form h4 {
+  margin: 0;
+  color: #243b63;
+}
+
+.comment-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #34445c;
+  font-weight: 600;
+}
+
+.comment-form input,
+.comment-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #ccd5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #243247;
+  font: inherit;
+}
+
+.comment-form textarea {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.comment-form input:focus,
+.comment-form textarea:focus {
+  outline: 2px solid #9bb9f0;
+  border-color: #547fc4;
+}
+
+.comments-conversation {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.comment {
+  margin-top: 12px;
+  padding: 16px;
+  background: #f8faff;
+  border: 1px solid #e0e7f0;
+  border-radius: 12px;
+}
+
+.comment-message strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #243b63;
+}
+
+.comment-message p {
+  margin: 0 0 10px;
+  color: #34445c;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-message small {
+  display: block;
+  margin-bottom: 12px;
+  color: #78869a;
+  font-size: 0.8rem;
+}
+
+.comment-thread {
+  margin-top: 14px;
+  padding-right: 14px;
+  border-right: 3px solid #d5e2fa;
+}
+
+.comment-replies {
+  margin-top: 10px;
+}
+
+.reply-form {
+  margin-top: 14px;
+}
+
+.thread-toggle-button {
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .comments-section {
+    padding: 16px;
+  }
+
+  .comment {
+    padding: 12px;
+  }
+
+  .comment-form {
+    padding: 14px;
+  }
+}
+
+
+
 
 
