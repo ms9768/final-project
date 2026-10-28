@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 const COMMENTS_API = 'http://localhost:7001/api/comments'
 
-function Comments({ lessonId }) {
+function Comments({ lessonId, showManagementButtons = false }) {
     const [comments, setComments] = useState([])
     const [author, setAuthor] = useState('')
     const [text, setText] = useState('')
@@ -21,7 +21,7 @@ function Comments({ lessonId }) {
             setError('')
 
             const response = await fetch(
-                `${COMMENTS_API}/lesson/${lessonId}`
+                `${COMMENTS_API}/lesson/${lessonId}${showManagementButtons ? '?includeHidden=true' : ''}`
             )
 
             if (!response.ok) {
@@ -36,6 +36,38 @@ function Comments({ lessonId }) {
             setLoading(false)
         }
     }
+
+
+
+    async function updateCommentVisibility(commentId, action) {
+        try {
+            setError('')
+
+            const response = await fetch(
+                `${COMMENTS_API}/${commentId}/${action}`,
+                { method: 'PATCH' }
+            )
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.message || 'עדכון התגובה נכשל')
+            }
+
+            await loadComments()
+        } catch (err) {
+            setError(err.message || 'שגיאה בעדכון התגובה')
+        }
+    }
+
+    async function hideComment(commentId) {
+        await updateCommentVisibility(commentId, 'hide')
+    }
+
+    async function showComment(commentId) {
+        await updateCommentVisibility(commentId, 'show')
+    }
+
 
     useEffect(() => {
         setLoading(true)
@@ -126,6 +158,26 @@ function Comments({ lessonId }) {
                 >
                     {replyTo === comment._id ? 'ביטול תשובה' : 'השיבי לתגובה'}
                 </button>
+
+                
+                {showManagementButtons && (
+                    comment.isVisible === false ? (
+                        <button
+                            type="button"
+                            onClick={() => showComment(comment._id)}
+                        >
+                            הצגת התגובה
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => hideComment(comment._id)}
+                        >
+                            🔒 הסתרת התגובה
+                        </button>
+                    )
+                )}
+
 
                 {replyTo === comment._id && (
                     <form

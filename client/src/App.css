@@ -661,3 +661,828 @@ h1 {
 
 
 
+/* ===== דף הבית ===== */
+
+.home-page {
+  padding-bottom: 40px;
+  color: #243047;
+}
+
+.home-hero {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  align-items: center;
+  gap: 32px;
+  padding: 48px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #eef2ff, #f8faff 65%, #e4f5f1);
+  border: 1px solid #e1e6f0;
+  overflow: hidden;
+}
+
+.home-hero-content {
+  max-width: 620px;
+}
+
+.home-eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #5367c5;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.home-hero h1 {
+  margin: 0 0 18px;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.25;
+}
+
+.home-hero-content > p,
+.home-section-heading > p,
+.home-info p {
+  color: #65718a;
+  line-height: 1.9;
+}
+
+.home-primary-button,
+.home-secondary-button {
+  padding: 13px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #4053b0;
+  color: white;
+  font-weight: 700;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.home-primary-button {
+  margin-top: 12px;
+}
+
+.home-primary-button:hover,
+.home-secondary-button:hover {
+  background: #293b92;
+  transform: translateY(-2px);
+}
+
+.home-hero-decoration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 230px;
+}
+
+.home-book-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 36px;
+  background: white;
+  box-shadow: 0 15px 40px rgb(36 48 71 / 10%);
+  font-size: 5rem;
+  transform: rotate(-5deg);
+}
+
+.home-decoration-card {
+  padding: 12px 18px;
+  border: 1px solid #e1e6f0;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 5px 18px rgb(36 48 71 / 6%);
+  font-weight: 600;
+}
+
+.home-decoration-card span {
+  margin-left: 8px;
+  color: #16845b;
+}
+
+.home-tracks {
+  padding: 52px 0 24px;
+}
+
+.home-section-heading {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.home-section-heading h2,
+.home-info h2 {
+  margin: 0 0 12px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.home-tracks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.home-track-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 26px;
+  border: 1px solid #e1e6f0;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 4px 14px rgb(36 48 71 / 4%);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.home-track-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgb(36 48 71 / 9%);
+}
+
+.home-track-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: #edf0ff;
+  font-size: 1.8rem;
+}
+
+.track-short .home-track-icon {
+  background: #fff2df;
+}
+
+.track-summer .home-track-icon {
+  background: #e0f6ed;
+}
+
+.home-track-card h3 {
+  margin: 4px 0 8px;
+  font-size: 1.25rem;
+}
+
+.home-track-card p {
+  flex: 1;
+  margin: 0 0 22px;
+  color: #65718a;
+  line-height: 1.8;
+}
+
+.home-track-button {
+  padding: 9px 0;
+  border: none;
+  background: transparent;
+  color: #4053b0;
+  font-weight: 700;
+}
+
+.home-track-button:hover {
+  text-decoration: underline;
+}
+
+.home-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 28px;
+  padding: 30px;
+  border: 1px solid #dce9e5;
+  border-radius: 18px;
+  background: #f0f8f5;
+}
+
+.home-info p {
+  max-width: 650px;
+  margin-bottom: 0;
+}
+
+.home-secondary-button {
+  flex-shrink: 0;
+}
+
+/* התאמה לטלפונים ולטאבלטים */
+
+@media (max-width: 800px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    padding: 30px;
+  }
+
+  .home-hero-decoration {
+    min-height: 180px;
+  }
+
+  .home-book-icon {
+    width: 110px;
+    height: 110px;
+    font-size: 3.8rem;
+  }
+
+  .home-tracks-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-info {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-hero {
+    padding: 22px;
+  }
+
+  .home-track-card {
+    padding: 20px;
+  }
+}
+
+
+.back-home-button {
+  display: block;
+  margin: 0 0 20px auto;
+  padding: 10px 18px;
+  border: 1px solid #d7dce5;
+  border-radius: 8px;
+  background: white;
+  color: #344054;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.back-home-button:hover {
+  background: #f0f4f8;
+}
+
+
+
+/* אזור הערים בדף הבית */
+.home-cities {
+  padding: 55px 0;
+}
+
+.home-cities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+}
+
+.home-city-card {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-city-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+}
+
+.home-city-card img {
+  display: block;
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+}
+
+.home-city-content {
+  padding: 20px;
+}
+
+.home-city-content h3 {
+  margin: 0 0 10px;
+  color: #253858;
+  font-size: 21px;
+}
+
+.home-city-content p {
+  margin: 0;
+  color: #667085;
+  line-height: 1.7;
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 768px) {
+  .home-cities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-city-card img {
+    height: 220px;
+  }
+}
+
+
+
+/* אזור העדויות בדף הבית */
+.home-testimonials {
+  padding: 55px 0;
+  background: #f8fafc;
+  border-radius: 20px;
+}
+
+.home-testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+  padding: 0 12px;
+}
+
+.home-testimonial-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.home-quote-mark {
+  color: #6478b8;
+  font-size: 48px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.home-testimonial-card > p {
+  flex: 1;
+  margin: 12px 0 24px;
+  color: #475467;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.home-testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #edf0f4;
+  padding-top: 18px;
+}
+
+.home-testimonial-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e8edff;
+  color: #344b91;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.home-testimonial-author h3 {
+  margin: 0 0 5px;
+  color: #253858;
+  font-size: 15px;
+}
+
+.home-testimonial-author span {
+  color: #667085;
+  font-size: 13px;
+}
+
+.home-testimonials-note {
+  margin: 22px 12px 0;
+  color: #667085;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 900px) {
+  .home-testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* טופס יצירת קשר */
+.home-contact {
+  margin: 40px 0;
+  padding: 45px 24px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+}
+
+.home-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+  margin: 30px auto 0;
+}
+
+.home-contact-form label {
+  margin-top: 8px;
+  color: #344054;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.home-contact-form input,
+.home-contact-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #344054;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-contact-form input:focus,
+.home-contact-form textarea:focus {
+  border-color: #6478b8;
+  box-shadow: 0 0 0 3px rgba(100, 120, 184, 0.15);
+}
+
+.home-contact-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.home-contact-form .home-primary-button {
+  align-self: flex-start;
+  margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .home-contact {
+    padding: 30px 16px;
+  }
+
+  .home-contact-form .home-primary-button {
+    width: 100%;
+  }
+}
+
+
+/* ===== עיצוב בסיסי למערכת מערכי השיעור ===== */
+
+.page {
+  min-height: 100vh;
+  padding: 32px 6%;
+  background: #f5f7fb;
+  color: #243247;
+  font-family: Arial, sans-serif;
+  direction: rtl;
+}
+
+.lessons-header {
+  text-align: center;
+  margin: 24px auto 32px;
+}
+
+.lessons-header h1 {
+  margin-bottom: 10px;
+  color: #243b63;
+  font-size: 2.2rem;
+}
+
+.lessons-header p {
+  color: #65738a;
+  font-size: 1.05rem;
+}
+
+.lesson-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  max-width: 900px;
+  margin: 0 auto 28px;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #e1e7f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(31, 52, 84, 0.05);
+}
+
+.lesson-filters label,
+.lesson-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #34445c;
+  font-weight: 600;
+}
+
+.lesson-filters input,
+.lesson-filters select,
+.lesson-form input,
+.lesson-form select,
+.lesson-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid #ccd5e2;
+  border-radius: 8px;
+  background: #fff;
+  color: #243247;
+  font: inherit;
+}
+
+.lesson-filters input:focus,
+.lesson-filters select:focus,
+.lesson-form input:focus,
+.lesson-form select:focus,
+.lesson-form textarea:focus {
+  outline: 2px solid #9bb9f0;
+  border-color: #547fc4;
+}
+
+.lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+  margin: 24px 0;
+}
+
+.lesson-card,
+.lesson-details-card {
+  position: relative;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e0e7f0;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(31, 52, 84, 0.06);
+}
+
+.lesson-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lesson-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 24px rgba(31, 52, 84, 0.1);
+}
+
+.track-label {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: #e8efff;
+  color: #315da8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.lesson-title-link {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #243b63;
+  text-align: right;
+  cursor: pointer;
+}
+
+.lesson-title-link h2 {
+  margin: 4px 0 12px;
+  font-size: 1.35rem;
+}
+
+.lesson-title-link:hover {
+  color: #386cc0;
+}
+
+.lesson-description {
+  color: #65738a;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.open-lesson-button,
+.admin-toolbar button,
+.lesson-form-actions button,
+.back-home-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #315da8;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.open-lesson-button {
+  margin-top: 12px;
+}
+
+.open-lesson-button:hover,
+.admin-toolbar button:hover,
+.lesson-form-actions button:hover,
+.back-home-button:hover {
+  background: #24477f;
+}
+
+.admin-section {
+  max-width: 1000px;
+  margin: 0 auto 28px;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.lesson-form {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e0e7f0;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(31, 52, 84, 0.05);
+}
+
+.lesson-form h2 {
+  margin: 0;
+  color: #243b63;
+}
+
+.lesson-form textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.lesson-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lesson-form-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lesson-management-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lesson-action-button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  background: #f7f9fc;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.lesson-action-button:hover {
+  background: #e8efff;
+}
+
+.status-message {
+  margin: 20px 0;
+  color: #315da8;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.status-message.error {
+  color: #b42318;
+}
+
+.lesson-details-page {
+  max-width: 950px;
+  margin: 0 auto;
+}
+
+.lesson-details-card {
+  margin-top: 22px;
+  line-height: 1.8;
+}
+
+.lesson-details-card > h1 {
+  color: #243b63;
+  font-size: 2rem;
+}
+
+.lesson-detail-section {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid #e5eaf1;
+}
+
+.lesson-detail-section h2 {
+  color: #315da8;
+  font-size: 1.2rem;
+}
+
+.lesson-full-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.9;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 10px 0;
+  padding: 12px 14px;
+  border: 1px solid #e0e7f0;
+  border-radius: 9px;
+  background: #f9fbff;
+}
+
+.file-name-button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #315da8;
+  font: inherit;
+  text-align: right;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.file-name-button:hover {
+  text-decoration: underline;
+}
+
+.download-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #e8efff;
+  color: #24477f;
+  text-decoration: none;
+  font-size: 1.4rem;
+}
+
+.download-link:hover {
+  background: #d6e3ff;
+}
+
+.back-home-button {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+
+  .lessons-header h1 {
+    font-size: 1.7rem;
+  }
+
+  .lesson-card,
+  .lesson-details-card,
+  .lesson-form {
+    padding: 18px;
+  }
+
+  .lesson-details-card > h1 {
+    font-size: 1.6rem;
+  }
+}
+
+
+
+

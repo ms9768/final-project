@@ -6,12 +6,20 @@ const Comment = require("../models/Comment");
 const Lesson = require("../models/Lesson");
 
 // הצגת התגובות הגלויות של שיעור מסוים
+
 router.get("/lesson/:lessonId", async (req, res) => {
     try {
-        const comments = await Comment.find({
-            lesson: req.params.lessonId,
-            isVisible: true
-        }).sort({ createdAt: 1 });
+        const filter = {
+            lesson: req.params.lessonId
+        };
+
+        // במצב ניהול אפשר לבקש גם תגובות מוסתרות
+        if (req.query.includeHidden !== "true") {
+            filter.isVisible = true;
+        }
+
+        const comments = await Comment.find(filter)
+            .sort({ createdAt: 1 });
 
         res.json(comments);
     } catch (error) {
@@ -21,6 +29,7 @@ router.get("/lesson/:lessonId", async (req, res) => {
         });
     }
 });
+
 
 // הוספת תגובה או תשובה לתגובה קיימת
 router.post("/", async (req, res) => {
