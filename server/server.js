@@ -7,10 +7,12 @@ const lessonRoutes = require("./routes/lessonRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 
 const app = express();
+const contactRoutes = require("./routes/contactRoutes");
 const PORT = process.env.PORT || 7001;
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/contacts", contactRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/comments", commentRoutes);
