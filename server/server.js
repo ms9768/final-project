@@ -3,19 +3,23 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
+
 const lessonRoutes = require("./routes/lessonRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const contactRoutes = require("./routes/contactRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
-const contactRoutes = require("./routes/contactRoutes");
 const PORT = process.env.PORT || 7001;
 
 app.use(cors());
 app.use(express.json());
+
 app.use("/api/contacts", contactRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "Hello from Server!" });
