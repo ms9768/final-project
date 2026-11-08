@@ -21,11 +21,25 @@ const lessonSchema = new mongoose.Schema(
             trim: true
         },
 
+        // תוכן השיעור בטקסט, אם נבחרה כתיבה ישירה
         content: {
             type: String,
-            required: true
+            default: ""
         },
 
+        // מסמך המשמש כתוכן השיעור, אם הועלה קובץ
+        contentFile: {
+            name: {
+                type: String,
+                default: ""
+            },
+            url: {
+                type: String,
+                default: ""
+            }
+        },
+
+        // קבצים נוספים המצורפים למערך
         files: [
             {
                 name: String,
