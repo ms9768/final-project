@@ -6,6 +6,8 @@ import LessonDetails from './components/LessonDetails'
 import HomePage from './components/HomePage'
 import ContactPage from './components/ContactPage'
 import ContactManagement from './components/ContactManagement'
+import AuthPage from './components/AuthPage'
+import PendingApprovals from './components/PendingApprovals'
 
 const API_URL = 'http://localhost:7001/api/lessons'
 
@@ -18,6 +20,22 @@ const EMPTY_FORM = {
 }
 
 function App() {
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('currentUser')) || null
+    } catch {
+      return null
+    }
+  })
+
+ function handleLogout() {
+    sessionStorage.removeItem('authToken')
+    sessionStorage.removeItem('currentUser')
+    setCurrentUser(null)
+    setShowLogin(false)
+    setShowLessonsPage(false)
+    setShowContactPage(false)
+}
 
   const lessonIdFromUrl = new URLSearchParams(window.location.search).get('lessonId')
   const isCoordinatorFromUrl = new URLSearchParams(window.location.search).get('coordinator') === 'true'
@@ -73,7 +91,7 @@ function App() {
 
   const [showLessonsPage, setShowLessonsPage] = useState(false)
   const [showContactPage, setShowContactPage] = useState(false)
-
+const [showLogin, setShowLogin] = useState(false)
   const [lessons, setLessons] = useState([])
   const [search, setSearch] = useState('')
   const [track, setTrack] = useState('')
@@ -87,8 +105,9 @@ function App() {
   const [previewPdfUrl, setPreviewPdfUrl] = useState('')
 
   const [showAdminForm, setShowAdminForm] = useState(false)
-  const [showCoordinatorView, setShowCoordinatorView] = useState(false)
+  const showCoordinatorView = currentUser?.role === 'coordinator'
   const [showContactManagement, setShowContactManagement] = useState(false)
+  const [showPendingApprovals, setShowPendingApprovals] = useState(false)
   const [editingLessonId, setEditingLessonId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
@@ -417,11 +436,31 @@ function App() {
     )
   }
 
+
+
   return (
     <main className="page" dir="rtl">
+      {currentUser && (
+    <div className="user-toolbar">
+        <span>
+            שלום, {currentUser.fullName}
+            {currentUser.role === 'coordinator' ? ' (רכזת)' : ' (מנחה)'}
+        </span>
 
-      {showContactPage ? (
-        <>
+        <button type="button" onClick={handleLogout}>
+            התנתקות
+        </button>
+    </div>
+)}
+{showLogin ? (
+    <AuthPage
+        onLogin={(user) => {
+            setCurrentUser(user)
+            setShowLogin(false)
+            setShowLessonsPage(true)
+        }}
+    />
+) : showContactPage ? (        <>
           <button
             type="button"
             className="back-home-button"
@@ -435,13 +474,23 @@ function App() {
           <ContactPage />
         </>
       ) : !showLessonsPage ? (
-        <HomePage
-          onShowLessons={() => {
-            setShowContactPage(false)
-            setShowLessonsPage(true)
-          }}
-          onShowContact={() => setShowContactPage(true)}
-        />
+       <HomePage
+    onShowLessons={() => {
+        if (!currentUser) {
+            setShowLogin(true)
+            return
+        }
+
+        setShowContactPage(false)
+        setShowLessonsPage(true)
+    }}
+    onShowContact={() => {
+        setShowLogin(false)
+        setShowLessonsPage(false)
+        setShowContactPage(true)
+    }}
+    onShowLogin={() => setShowLogin(true)}
+/>
       ) : (
         <>
           <button
@@ -483,19 +532,17 @@ function App() {
 
           <section className="admin-section">
             <div className="admin-toolbar">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCoordinatorView((previous) => !previous)
-                  setShowAdminForm(false)
-                  setSaveMessage('')
-                  setSaveError('')
-                }}
-              >
-                {showCoordinatorView
-                  ? 'מעבר לתצוגת מנחה'
-                  : 'תצוגת רכזת'}
-              </button>
+              {showCoordinatorView && (
+                <button
+                  type="button"
+                  onClick={() => setShowPendingApprovals((previous) => !previous)}
+                >
+                  {showPendingApprovals
+                    ? 'הסתרת בקשות הרשמה'
+                    : '👥 אישור מנחות חדשות'}
+                </button>
+              )}
+
 
 
               {showCoordinatorView && (
@@ -535,6 +582,12 @@ function App() {
 
             {showCoordinatorView && showContactManagement && (
               <ContactManagement
+                authToken={sessionStorage.getItem('authToken') || ''}
+              />
+            )}
+
+            {showCoordinatorView && showPendingApprovals && (
+              <PendingApprovals
                 authToken={sessionStorage.getItem('authToken') || ''}
               />
             )}

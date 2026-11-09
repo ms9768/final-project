@@ -1,6 +1,6 @@
 
-function HomePage({ onShowLessons, onShowContact }) {
-    const tracks = [
+function HomePage({ onShowLessons, onShowContact, onShowLogin }) {
+        const tracks = [
         {
             title: 'המסלול הארוך',
             description: 'מאגר שיעורים וחומרי למידה לתהליך לימודי מתמשך.',
@@ -91,7 +91,15 @@ function HomePage({ onShowLessons, onShowContact }) {
                         מעבר למאגר השיעורים
                         <span aria-hidden="true"> ←</span>
                     </button>
+                    <button
+    type="button"
+    className="home-secondary-button"
+    onClick={onShowLogin}
+>
+    כניסה למערכת
+</button>
                 </div>
+                
 
                 <div className="home-hero-decoration" aria-hidden="true">
                     <div className="home-book-icon">📖</div>
