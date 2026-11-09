@@ -5,6 +5,7 @@ import LessonCard from './components/LessonCard'
 import LessonDetails from './components/LessonDetails'
 import HomePage from './components/HomePage'
 import ContactPage from './components/ContactPage'
+import ContactManagement from './components/ContactManagement'
 
 const API_URL = 'http://localhost:7001/api/lessons'
 
@@ -87,6 +88,7 @@ function App() {
 
   const [showAdminForm, setShowAdminForm] = useState(false)
   const [showCoordinatorView, setShowCoordinatorView] = useState(false)
+  const [showContactManagement, setShowContactManagement] = useState(false)
   const [editingLessonId, setEditingLessonId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
@@ -495,6 +497,20 @@ function App() {
                   : 'תצוגת רכזת'}
               </button>
 
+
+              {showCoordinatorView && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowContactManagement((previous) => !previous)
+                  }
+                >
+                  {showContactManagement
+                    ? 'הסתרת פניות יצירת קשר'
+                    : '📩 צפייה בפניות יצירת קשר'}
+                </button>
+              )}
+
               {showCoordinatorView && (
                 <button
                   type="button"
@@ -516,6 +532,12 @@ function App() {
                 </button>
               )}
             </div>
+
+            {showCoordinatorView && showContactManagement && (
+              <ContactManagement
+                authToken={sessionStorage.getItem('authToken') || ''}
+              />
+            )}
 
             {showCoordinatorView && showAdminForm && (
               <form className="lesson-form" onSubmit={handleSaveLesson}>
@@ -618,28 +640,34 @@ function App() {
             )}
           </section>
 
-          {loading ? (
-            <p className="status-message">טוען מערכי שיעור...</p>
-          ) : error ? (
-            <p className="status-message error">{error}</p>
-          ) : lessons.length === 0 ? (
-            <p className="status-message">לא נמצאו מערכי שיעור מתאימים.</p>
-          ) : (
-            <section className="lessons-grid" aria-label="מערכי שיעור">
-              {lessons.map((lesson) => (
-                <LessonCard
-                  key={lesson._id}
-                  lesson={lesson}
-                  onPreview={openPreview}
-                  onHide={hideLesson}
-                  onShow={showLesson}
-                  onDelete={deleteLesson}
-                  onEdit={startEditLesson}
-                  showManagementButtons={showCoordinatorView}
-                />
-              ))}
-            </section>
+
+          {!(showCoordinatorView && showContactManagement) && (
+            <>
+              {loading ? (
+                <p className="status-message">טוען מערכי שיעור...</p>
+              ) : error ? (
+                <p className="status-message error">{error}</p>
+              ) : lessons.length === 0 ? (
+                <p className="status-message">לא נמצאו מערכי שיעור מתאימים.</p>
+              ) : (
+                <section className="lessons-grid" aria-label="מערכי שיעור">
+                  {lessons.map((lesson) => (
+                    <LessonCard
+                      key={lesson._id}
+                      lesson={lesson}
+                      onPreview={openPreview}
+                      onHide={hideLesson}
+                      onShow={showLesson}
+                      onDelete={deleteLesson}
+                      onEdit={startEditLesson}
+                      showManagementButtons={showCoordinatorView}
+                    />
+                  ))}
+                </section>
+              )}
+            </>
           )}
+
 
           <PreviewModal
             previewFile={previewFile}
