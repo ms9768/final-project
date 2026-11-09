@@ -28,12 +28,20 @@ const userSchema = new mongoose.Schema(
             required: true
         },
 
+
         coordinatorId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             default: null
         },
 
+        coordinatorCode: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+    uppercase: true
+},
         approvalStatus: {
             type: String,
             enum: ["pending", "approved", "rejected"],
