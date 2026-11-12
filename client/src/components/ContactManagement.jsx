@@ -91,7 +91,11 @@ function ContactManagement({ authToken }) {
 
                                 <p>
                                     <strong>דוא״ל:</strong>{' '}
-                                    <a href={`mailto:${contact.email}`}>
+                                    <a
+                                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact.email)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
                                         {contact.email}
                                     </a>
                                 </p>
@@ -99,9 +103,7 @@ function ContactManagement({ authToken }) {
                                 {contact.phone && (
                                     <p>
                                         <strong>טלפון:</strong>{' '}
-                                        <a href={`tel:${contact.phone}`}>
-                                            {contact.phone}
-                                        </a>
+                                        <span>{contact.phone}</span>
                                     </p>
                                 )}
 
