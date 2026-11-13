@@ -6,30 +6,70 @@ import jerusalem from '../assets/cities/jerusalem.jpg'
 import beitShemesh from '../assets/cities/beit-shemesh.jpg'
 import modiin from '../assets/cities/rechovot.jpg'
 import bneiBrak from '../assets/cities/bnei-brak.jpg'
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 
 function HomePage({ onShowLessons, onShowContact }) {
     const citiesTrackRef = useRef(null)
+    const [locationIconVisible, setLocationIconVisible] = useState(false)
+    const locationIconRef = useRef(null)
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setLocationIconVisible(true)
+                    observer.disconnect()
+                }
+            },
+            { threshold: 0.5 }
+        )
+
+        if (locationIconRef.current) {
+            observer.observe(locationIconRef.current)
+        }
+
+        return () => observer.disconnect()
+    }, [])
+
     const tracks = [
         {
             title: 'מסלול ארוך',
             description: 'תוכנית העמקה מקיפה לליווי, צמיחה והובלת קבוצה לאורך השנה.',
-            icon: '▱',
+            icon: (
+                <svg width="44" height="44" viewBox="0 0 48 48" fill="white" stroke="#71358b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M24 13 C18 9 10 9 5 12 V37 C11 34 18 35 24 39 C30 35 37 34 43 37 V12 C38 9 30 9 24 13Z" />
+                    <path d="M24 13 V39" />
+                    <path d="M10 17 C14 16 18 17 20 19" />
+                    <path d="M28 19 C31 17 35 16 39 17" />
+                </svg>
+            ),
             className: 'track-long',
         },
         {
             title: 'מסלול קצר',
             description: 'הכשרה ממוקדת, גמישה ועשירה בתוכן יישומי.',
-            icon: '▦',
+            icon: (
+                <svg width="44" height="44" viewBox="0 0 48 48" fill="white" stroke="#71358b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="7" y="11" width="34" height="31" rx="4" />
+                    <path d="M15 7 V15 M33 7 V15 M7 20 H41" />
+                    <path d="M16 27 H20 M28 27 H32 M16 34 H20 M28 34 H32" strokeWidth="2.8" />
+                </svg>
+            ),
             className: 'track-short',
         },
         {
             title: 'מסלול קיץ',
             description: 'תוכנית מרוכזת לחופשת הקיץ, עם מערכים חווייתיים ומגוונים.',
-            icon: '☀',
+            icon: (
+                <svg width="44" height="44" viewBox="0 0 48 48" fill="#FACC15" stroke="#EAB308" strokeWidth="2.5" strokeLinecap="round">
+                    <circle cx="24" cy="24" r="9" />
+                    <path d="M24 4 V10 M24 38 V44 M4 24 H10 M38 24 H44 M10 10 L14 14 M34 34 L38 38 M38 10 L34 14 M14 34 L10 38" />
+                </svg>
+            ),
             className: 'track-summer',
         },
     ]
+
 
     const cities = [
         {
@@ -110,20 +150,33 @@ function HomePage({ onShowLessons, onShowContact }) {
             <section className="home-hero" id="home">
                 <div className="home-hero-content">
                     <h1>
-                        מערך תוכן
+                        מבט לגובה
                         <span className="hero-title-underline"></span>
                     </h1>
 
                     <p>
-                        מאגר מערכים, כלים ורעיונות
+                        התכנית קיימת בתוך המערכת הלימודית -
                         <br />
-                        להובלת קבוצות משמעותיות
+                        בבתי ספר לכיתות ח'
+                        <br />
+                        התוכנית מכירה לבנות את מאפיניי גיל ההתבגרות
+                        <br />
+                        ממשק עם הנושאים, מנחה חיצונית
+                        <br />
+                        קבוצות קטנות שמאפשרות שיח בונה
+                        <br />
+                        עוד מבוגר משמעותי בחיים מעבר למעגלי ההורים והממסד
                     </p>
 
                     <button
                         type="button"
                         className="home-primary-button"
-                        onClick={onShowLessons}
+                        onClick={() => {
+                            document.getElementById('about')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }}
                     >
                         להיכרות עם התוכנית
                         <span>←</span>
@@ -210,7 +263,25 @@ function HomePage({ onShowLessons, onShowContact }) {
             {/* הערים */}
             <section className="home-cities" id="cities">
                 <div className="home-section-heading">
-                    <h2>היכן אנחנו פועלות?</h2>
+                    <h2>
+                        <svg
+                            ref={locationIconRef}
+                            className={`cities-location-icon ${locationIconVisible ? 'is-visible' : ''}`}
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="36"
+                            height="36"
+                            viewBox="0 0 24 24"
+                            fill="#7d64ac"
+                            stroke="#7d64ac"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+                            <circle cx="12" cy="10" r="3" fill="white" />
+                        </svg>
+                        היכן אנחנו פועלים?
+                    </h2>
                     <p>
                         התוכנית מתקיימת במגוון ערים ברחבי הארץ.
                     </p>
@@ -300,7 +371,7 @@ function HomePage({ onShowLessons, onShowContact }) {
                 </div>
 
                 <div className="contact-banner-content">
-                    <h2>רוצות לשמוע עוד?</h2>
+                    <h2>רוצים לשמוע עוד?</h2>
                     <p>
                         נשמח להיות בקשר, לענות על שאלות ולספק מידע נוסף.
                     </p>
