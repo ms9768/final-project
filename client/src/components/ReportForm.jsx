@@ -1,11 +1,30 @@
 
 import { useEffect, useState } from "react";
 
+const schools = [
+  "בית יעקב בנות שרה – בני ברק",
+  "בית יעקב בנות ויזניץ – בית שמש",
+  "בית חינוך לבנות – בני ברק",
+  "בית מלכה – אשדוד",
+  "בית מלכה – בני ברק",
+  "בית מלכה – בית שמש",
+  "בית מלכה – חיפה",
+  "בית יעקב גילה – ירושלים",
+  "בית יעקב היובל – ירושלים",
+  "בית יעקב נאות הפסגה – מודיעין עילית",
+];
+
+const classes = Array.from(
+  { length: 20 },
+  (_, index) => `ח-${index + 1}`
+);
+
+const groupNumbers = [1, 2, 3];
+
 function formatDateForInput(dateValue) {
   if (!dateValue) return "";
 
   const date = new Date(dateValue);
-
   const localDate = new Date(
     date.getTime() - date.getTimezoneOffset() * 60000
   );
@@ -14,44 +33,52 @@ function formatDateForInput(dateValue) {
 }
 
 function ReportForm({
-  groups,
+  facilitatorLevel,
   onSubmit,
   onCancel,
   initialData = null,
 }) {
   const [formData, setFormData] = useState({
-    groupId: "",
+    schoolName: "",
+    className: "",
+    groupNumber: "",
     meetingDate: "",
     topic: "",
     participantCount: "",
     refreshmentsCost: "",
+    meetingLocation: "",
+    prolongedConversation: false,
   });
 
   const [receipt, setReceipt] = useState(null);
-
   const isEditing = Boolean(initialData);
+  const isSenior = facilitatorLevel === "senior";
 
   useEffect(() => {
     if (initialData) {
       setFormData({
-        groupId:
-          initialData.groupId?._id ||
-          initialData.groupId ||
-          "",
-        meetingDate: formatDateForInput(
-          initialData.meetingDate
-        ),
+        schoolName: initialData.schoolName || "",
+        className: initialData.className || "",
+        groupNumber: initialData.groupNumber ?? "",
+        meetingDate: formatDateForInput(initialData.meetingDate),
         topic: initialData.topic || "",
         participantCount: initialData.participantCount ?? "",
         refreshmentsCost: initialData.refreshmentsCost ?? "",
+        meetingLocation: initialData.meetingLocation || "",
+        prolongedConversation:
+          initialData.prolongedConversation || false,
       });
     } else {
       setFormData({
-        groupId: "",
+        schoolName: "",
+        className: "",
+        groupNumber: "",
         meetingDate: "",
         topic: "",
         participantCount: "",
         refreshmentsCost: "",
+        meetingLocation: "",
+        prolongedConversation: false,
       });
     }
 
@@ -59,11 +86,11 @@ function ReportForm({
   }, [initialData]);
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   }
 
@@ -75,10 +102,25 @@ function ReportForm({
   function handleSubmit(event) {
     event.preventDefault();
 
+    // אם דווחו הוצאות כיבוד, חובה לצרף קבלה
+    // בעריכת דיווח אפשר להשתמש בקבלה שכבר קיימת
+    if (
+      Number(formData.refreshmentsCost) > 0 &&
+      !receipt &&
+      !initialData?.receipt
+    ) {
+      alert("כדי לדווח על הוצאות כיבוד יש לצרף קבלה");
+      return;
+    }
+
     const reportData = {
       ...formData,
+      groupNumber: Number(formData.groupNumber),
       participantCount: Number(formData.participantCount),
       refreshmentsCost: Number(formData.refreshmentsCost),
+      prolongedConversation: isSenior
+        ? formData.prolongedConversation
+        : false,
     };
 
     onSubmit(reportData, receipt);
@@ -90,18 +132,62 @@ function ReportForm({
         {isEditing ? "עריכת דיווח פגישה" : "דיווח על פגישה"}
       </h2>
 
-      <label>קבוצה</label>
+      <label>בית ספר</label>
       <select
-        name="groupId"
-        value={formData.groupId}
-        onChange={handleChange}
+        name="schoolName"
+        value={formData.schoolName}
+        onChange={(event) =>
+          setFormData((prev) => ({
+            ...prev,
+            schoolName: event.target.value,
+            className: "",
+            groupNumber: "",
+          }))
+        }
         required
       >
-        <option value="">בחר קבוצה</option>
+        <option value="">בחרי בית ספר</option>
+        {schools.map((school) => (
+          <option key={school} value={school}>
+            {school}
+          </option>
+        ))}
+      </select>
 
-        {groups.map((group) => (
-          <option key={group._id} value={group._id}>
-            {group.name}
+      <label>כיתה</label>
+      <select
+        name="className"
+        value={formData.className}
+        onChange={(event) =>
+          setFormData((prev) => ({
+            ...prev,
+            className: event.target.value,
+            groupNumber: "",
+          }))
+        }
+        disabled={!formData.schoolName}
+        required
+      >
+        <option value="">בחרי כיתה</option>
+        {classes.map((className) => (
+          <option key={className} value={className}>
+            {className}
+          </option>
+        ))}
+      </select>
+
+      <label>קבוצה</label>
+      <select
+        name="groupNumber"
+        value={formData.groupNumber}
+        onChange={handleChange}
+        disabled={!formData.className}
+        required
+      >
+        <option value="">בחרי קבוצה</option>
+        {groupNumbers.map((number) => (
+          <option key={number} value={number}>
+            קבוצה {number}
           </option>
         ))}
       </select>
@@ -134,6 +220,30 @@ function ReportForm({
         required
       />
 
+      <label>מקום הפגישה</label>
+      <select
+        name="meetingLocation"
+        value={formData.meetingLocation}
+        onChange={handleChange}
+        required
+      >
+        <option value="">בחרי מקום פגישה</option>
+        <option value="facilitator_home">בבית המנחה</option>
+        <option value="organization_venue">מקום מטעם הארגון</option>
+      </select>
+
+      {isSenior && (
+        <label>
+          <input
+            type="checkbox"
+            name="prolongedConversation"
+            checked={formData.prolongedConversation}
+            onChange={handleChange}
+          />
+          התקיימה שיחה ממושכת עם משתתפת
+        </label>
+      )}
+
       <label>עלות כיבוד (₪)</label>
       <input
         type="number"
@@ -151,9 +261,7 @@ function ReportForm({
         onChange={handleReceiptChange}
       />
 
-      {receipt && (
-        <p>נבחר קובץ חדש: {receipt.name}</p>
-      )}
+      {receipt && <p>נבחר קובץ חדש: {receipt.name}</p>}
 
       {isEditing && !receipt && initialData.receipt?.fileName && (
         <p>

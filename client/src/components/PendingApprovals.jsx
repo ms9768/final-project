@@ -9,6 +9,7 @@ function PendingApprovals({ authToken }) {
     const [error, setError] = useState('')
     const [message, setMessage] = useState('')
     const [approvingId, setApprovingId] = useState(null)
+    const [facilitatorLevels, setFacilitatorLevels] = useState({})
 
     async function loadPendingUsers() {
         try {
@@ -40,7 +41,21 @@ function PendingApprovals({ authToken }) {
         loadPendingUsers()
     }, [])
 
+    function handleLevelChange(userId, level) {
+        setFacilitatorLevels((previous) => ({
+            ...previous,
+            [userId]: level,
+        }))
+    }
+
     async function approveUser(userId) {
+        const facilitatorLevel = facilitatorLevels[userId]
+
+        if (!facilitatorLevel) {
+            setError('יש לבחור אם המנחה צעירה או בוגרת')
+            return
+        }
+
         try {
             setApprovingId(userId)
             setError('')
@@ -49,8 +64,12 @@ function PendingApprovals({ authToken }) {
             const response = await fetch(`${API_URL}/${userId}/approve`, {
                 method: 'PATCH',
                 headers: {
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${authToken}`,
                 },
+                body: JSON.stringify({
+                    facilitatorLevel,
+                }),
             })
 
             const data = await response.json()
@@ -63,7 +82,8 @@ function PendingApprovals({ authToken }) {
                 previous.filter((user) => user._id !== userId)
             )
 
-            setMessage(data.message || 'המשתמשת אושרה בהצלחה!')
+            setMessage(data.message || 'המנחה אושרה בהצלחה!')
+
         } catch (err) {
             setError(err.message || 'אירעה שגיאה באישור המנחה')
         } finally {
@@ -90,6 +110,24 @@ function PendingApprovals({ authToken }) {
                             <div>
                                 <h3>{user.fullName}</h3>
                                 <p>{user.email}</p>
+
+                                <label>
+                                    סיווג המנחה:
+                                    <select
+                                        value={facilitatorLevels[user._id] || ''}
+                                        onChange={(e) =>
+                                            handleLevelChange(
+                                                user._id,
+                                                e.target.value
+                                            )
+                                        }
+                                        disabled={approvingId !== null}
+                                    >
+                                        <option value="">בחרי סיווג</option>
+                                        <option value="young">מנחה צעירה</option>
+                                        <option value="senior">מנחה בוגרת</option>
+                                    </select>
+                                </label>
                             </div>
 
                             <button
@@ -109,7 +147,7 @@ function PendingApprovals({ authToken }) {
             <button
                 type="button"
                 onClick={loadPendingUsers}
-                disabled={loading}
+                disabled={loading || approvingId !== null}
             >
                 רענון בקשות
             </button>

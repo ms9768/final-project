@@ -1,3 +1,4 @@
+import { useState } from 'react'
 
 function LessonCard({
   lesson,
@@ -6,7 +7,12 @@ function LessonCard({
   onDelete,
   onEdit,
   showManagementButtons,
+  facilitators = [],
+  onOpenAccess,
+  onCloseAccess,
+  accessLoading,
 }) {
+  const [selectedFacilitator, setSelectedFacilitator] = useState('')
   function openLessonDetails() {
     const params = new URLSearchParams()
     params.set('lessonId', lesson._id)
@@ -16,7 +22,7 @@ function LessonCard({
     }
 
     const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`
-    window.open(url, '_blank', 'noopener,noreferrer')
+    window.open(url, '_blank')
   }
 
   return (
@@ -63,6 +69,37 @@ function LessonCard({
             aria-label="מחיקת מערך השיעור"
           >
             🗑️
+          </button>
+        </div>
+      )}
+      {showManagementButtons && (
+        <div className="lesson-access-management">
+          <select
+            value={selectedFacilitator}
+            onChange={(e) => setSelectedFacilitator(e.target.value)}
+          >
+            <option value="">בחרי מנחה</option>
+            {facilitators.map((facilitator) => (
+              <option key={facilitator._id} value={facilitator._id}>
+                {facilitator.fullName}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            disabled={!selectedFacilitator || accessLoading}
+            onClick={() => onOpenAccess(lesson._id, selectedFacilitator)}
+          >
+            פתיחת גישה
+          </button>
+
+          <button
+            type="button"
+            disabled={!selectedFacilitator || accessLoading}
+            onClick={() => onCloseAccess(lesson._id, selectedFacilitator)}
+          >
+            סגירת גישה
           </button>
         </div>
       )}

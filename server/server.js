@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -7,6 +8,12 @@ const lessonRoutes = require("./routes/lessonRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const userRoutes = require("./routes/userRoutes");
+const meetingReportRoutes = require("./routes/MeetingReportRoute");
+const groupRoutes = require("./routes/GroupRoute");
+const systemSettingsRoutes = require("./routes/SystemSettingsRoute");
+const deliveryRoutes = require("./routes/DeliveryRoute");
+const bankDetailsRoutes = require("./routes/bankDetailsRoutes");
+const paymentManagementRoutes = require("./routes/paymentManagementRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 7001;
@@ -19,6 +26,12 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/meeting-reports", meetingReportRoutes);
+app.use("/api/groups", groupRoutes);
+app.use("/api/systemsettings", systemSettingsRoutes);
+app.use("/api/deliveries", deliveryRoutes);
+app.use("/api/bank-details", bankDetailsRoutes);
+app.use("/api/payment-management", paymentManagementRoutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "Hello from Server!" });

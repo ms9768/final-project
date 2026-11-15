@@ -4,7 +4,6 @@ import "./MeetingReports.css";
 import ReportForm from "./components/ReportForm";
 import ReportList from "./components/ReportList";
 import PaymentSummary from "./components/PaymentSummary";
-import SystemSettings from "./components/SystemSettings";
 
 import {
   getReports,
@@ -17,9 +16,13 @@ import {
   getAllLecturersPayments,
 } from "./services/meetingReportService";
 
-const LECTURER_ID = "6aebb3f20e1e4f0c9ecd38cd";
+function MeetingReportsPage({ initialShowForm = false }) {
+  const currentUser = JSON.parse(
+    sessionStorage.getItem("currentUser") || "null"
+  );
 
-function MeetingReportsPage() {
+  const isCoordinatorView = currentUser?.role === "coordinator";
+
   const [reports, setReports] = useState([]);
   const [groups, setGroups] = useState([]);
   const [lecturerPayment, setLecturerPayment] = useState(null);
@@ -27,8 +30,7 @@ function MeetingReportsPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [isCoordinatorView, setIsCoordinatorView] = useState(false);
+  const [showForm, setShowForm] = useState(initialShowForm);
   const [message, setMessage] = useState("");
   const [editingReport, setEditingReport] = useState(null);
 
@@ -41,17 +43,11 @@ function MeetingReportsPage() {
       setLoading(true);
       setError("");
 
-      const [
-        reportsData,
-        groupsData,
-        paymentData,
-        allPaymentsData,
-      ] = await Promise.all([
-        getReports(),
-        getGroups(LECTURER_ID),
-        getLecturerPayment(LECTURER_ID),
-        getAllLecturersPayments(),
-      ]);
+      if (!currentUser?.id || !currentUser?.role) {
+        throw new Error("פרטי המשתמשת המחוברת לא נמצאו");
+      }
+
+      const reportsData = await getReports();
 
       setReports(
         Array.isArray(reportsData)
@@ -59,11 +55,25 @@ function MeetingReportsPage() {
           : []
       );
 
-      setGroups(Array.isArray(groupsData) ? groupsData : []);
-      setLecturerPayment(paymentData);
-      setLecturersPayments(
-        Array.isArray(allPaymentsData) ? allPaymentsData : []
-      );
+      if (isCoordinatorView) {
+        const allPaymentsData = await getAllLecturersPayments();
+
+        setLecturersPayments(
+          Array.isArray(allPaymentsData) ? allPaymentsData : []
+        );
+
+        setGroups([]);
+        setLecturerPayment(null);
+      } else {
+        const [groupsData, paymentData] = await Promise.all([
+          getGroups(currentUser.id),
+          getLecturerPayment(currentUser.id),
+        ]);
+
+        setGroups(Array.isArray(groupsData) ? groupsData : []);
+        setLecturerPayment(paymentData);
+        setLecturersPayments([]);
+      }
     } catch (err) {
       setError(err.message || "שגיאה בטעינת הנתונים");
     } finally {
@@ -140,33 +150,12 @@ function MeetingReportsPage() {
         coordinatorNotes
       );
 
-      const reportsData = await getReports();
-
-      setReports(
-        Array.isArray(reportsData)
-          ? reportsData.filter(Boolean)
-          : []
-      );
-
-      const [paymentData, allPaymentsData] =
-        await Promise.all([
-          getLecturerPayment(LECTURER_ID),
-          getAllLecturersPayments(),
-        ]);
-
-      setLecturerPayment(paymentData);
-      setLecturersPayments(allPaymentsData);
+      await loadData();
 
       setMessage("הדיווח עודכן בהצלחה!");
     } catch (err) {
       setMessage(err.message || "שגיאה בעדכון הדיווח");
     }
-  }
-
-  function handleViewChange() {
-    setIsCoordinatorView((previous) => !previous);
-    handleCancelForm();
-    setMessage("");
   }
 
   const pendingReports = reports.filter(
@@ -175,10 +164,13 @@ function MeetingReportsPage() {
 
   const totalPayments = isCoordinatorView
     ? lecturersPayments.reduce(
-      (sum, payment) => sum + (payment.totalPayment || 0),
-      0
-    )
-    : lecturerPayment?.totalPayment || 0;
+        (sum, payment) =>
+          sum + (payment.totalCombinedPayment ?? payment.totalPayment ?? 0),
+        0
+      )
+    : lecturerPayment?.totalCombinedPayment ??
+      lecturerPayment?.totalPayment ??
+      0;
 
   const stats = [
     {
@@ -194,7 +186,7 @@ function MeetingReportsPage() {
       color: "gold",
     },
     {
-      title: "סכום לתשלום",
+      title: "סכום לתשלום כולל שכירות",
       value: `${totalPayments.toLocaleString("he-IL")} ₪`,
       icon: "₪",
       color: "green",
@@ -211,12 +203,6 @@ function MeetingReportsPage() {
             <p>יחד מתכננים, משפיעים ומקדמים</p>
           </div>
         </div>
-
-        <button className="view-toggle" onClick={handleViewChange}>
-          {isCoordinatorView
-            ? "תצוגת מנחה"
-            : "תצוגת רכזת"}
-        </button>
       </header>
 
       {message && (
@@ -247,6 +233,7 @@ function MeetingReportsPage() {
       {!isCoordinatorView && showForm && (
         <ReportForm
           groups={groups}
+          facilitatorLevel={currentUser?.facilitatorLevel}
           onSubmit={handleSaveReport}
           onCancel={handleCancelForm}
           initialData={editingReport}
@@ -286,51 +273,11 @@ function MeetingReportsPage() {
           />
         </section>
 
-        <aside className="side-panel">
-          {!isCoordinatorView ? (
+        {!isCoordinatorView && (
+          <aside className="side-panel">
             <PaymentSummary lecturerPayment={lecturerPayment} />
-          ) : (
-            <>
-              <section className="payments-panel">
-                <h2>סיכום תשלומים</h2>
-
-                {lecturersPayments.length === 0 ? (
-                  <p>לא נמצאו נתוני תשלום.</p>
-                ) : (
-                  <>
-                    <div className="total-payment-box">
-                      <span>סה"כ לתשלום</span>
-                      <strong>
-                        {totalPayments.toLocaleString("he-IL")} ₪
-                      </strong>
-                    </div>
-
-                    {lecturersPayments.map((payment) => (
-                      <div
-                        className="lecturer-payment-row"
-                        key={payment.lecturerId}
-                      >
-                        <strong>
-                          {payment.lecturerName || payment.email}
-                        </strong>
-
-                        <span>
-                          {payment.totalPayment.toLocaleString("he-IL")} ₪
-                        </span>
-
-                        <small>
-                          {payment.approvedMeetingsCount} פגישות שאושרו
-                        </small>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </section>
-
-              <SystemSettings />
-            </>
-          )}
-        </aside>
+          </aside>
+        )}
       </div>
 
       <footer className="welcome-banner">

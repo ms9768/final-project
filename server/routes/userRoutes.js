@@ -5,6 +5,11 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 const User = require("../models/User");
+const { sendBrevoEmail } = require("../services/brevoEmail");
+const {
+    createBankDetailsToken,
+    hashBankDetailsToken
+} = require("../services/bankDetails");
 // בדיקת אסימון התחברות
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -39,10 +44,27 @@ const requireCoordinator = (req, res, next) => {
 // הרשמת משתמשת חדשה
 router.post("/register", async (req, res) => {
     try {
-         const { fullName, email, password, coordinatorCode } = req.body;  
-        if (!fullName || !email || !password) {
+        const { fullName, email, password, coordinatorCode } = req.body || {};
+        if (
+            typeof fullName !== "string" ||
+            typeof email !== "string" ||
+            typeof password !== "string" ||
+            !fullName.trim() ||
+            !email.trim() ||
+            !password
+        ) {
             return res.status(400).json({
                 message: "יש למלא שם מלא, מייל וסיסמה"
+            });
+        }
+
+        if (
+            fullName.trim().length > 120 ||
+            email.trim().length > 254 ||
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+        ) {
+            return res.status(400).json({
+                message: "יש להזין שם מלא וכתובת מייל תקינים"
             });
         }
 
@@ -58,25 +80,28 @@ router.post("/register", async (req, res) => {
             email: normalizedEmail
         });
 
-        
-        if (!coordinatorCode || !coordinatorCode.trim()) {
-    return res.status(400).json({
-        message: "יש להזין קוד רכזת"
-    });
-}
-        
-        
-        const coordinator = await User.findOne({
-    coordinatorCode: coordinatorCode.trim().toUpperCase(),
-    role: "coordinator",
-    isActive: true
-});
 
-if (!coordinator) {
-    return res.status(400).json({
-        message: "קוד רכזת לא תקין"
-    });
-}
+        if (
+            typeof coordinatorCode !== "string" ||
+            !coordinatorCode.trim()
+        ) {
+            return res.status(400).json({
+                message: "יש להזין קוד רכזת"
+            });
+        }
+
+
+        const coordinator = await User.findOne({
+            coordinatorCode: coordinatorCode.trim().toUpperCase(),
+            role: "coordinator",
+            isActive: true
+        });
+
+        if (!coordinator) {
+            return res.status(400).json({
+                message: "קוד רכזת לא תקין"
+            });
+        }
 
         if (existingUser) {
             return res.status(409).json({
@@ -84,18 +109,48 @@ if (!coordinator) {
             });
         }
 
-        
-        const passwordHash = await bcrypt.hash(password, 12);
 
-      const user = await User.create({
-    fullName: fullName.trim(),
-    email: normalizedEmail,
-    passwordHash,
-    role: "facilitator",
-    coordinatorId: coordinator._id,
-    approvalStatus: "pending",
-    isActive: true
-});
+        const passwordHash = await bcrypt.hash(password, 12);
+        const bankDetailsToken = createBankDetailsToken();
+
+        const user = await User.create({
+            fullName: fullName.trim(),
+            email: normalizedEmail,
+            passwordHash,
+            role: "facilitator",
+            coordinatorId: coordinator._id,
+            approvalStatus: "pending",
+            bankDetailsTokenHash: hashBankDetailsToken(bankDetailsToken),
+            bankDetailsTokenExpiresAt: new Date(
+                Date.now() + 24 * 60 * 60 * 1000
+            ),
+            isActive: true
+        });
+
+        const clientUrl = (
+            process.env.CLIENT_URL || "http://localhost:5173"
+        ).replace(/\/+$/, "");
+
+        try {
+            await sendBrevoEmail({
+                to: user.email,
+                subject: "השלמת פרטי חשבון בנק",
+                html: `
+                    <div dir="rtl" style="font-family:Arial,sans-serif">
+                        <h2>שלום,</h2>
+                        <p>כדי שנוכל להכין את תשלומי הפגישות, יש למלא פרטי חשבון בנק בקישור האישי:</p>
+                        <p><a href="${clientUrl}/bank-details#${bankDetailsToken}">מילוי פרטי חשבון בנק</a></p>
+                        <p>הקישור אישי, חד-פעמי ותוקפו 24 שעות. מילוי הפרטים אינו מאשר את בקשת ההרשמה.</p>
+                    </div>
+                `,
+            });
+        } catch {
+            await User.deleteOne({ _id: user._id });
+            console.error("Registration bank-details email delivery failed");
+            return res.status(502).json({
+                message: "לא ניתן להשלים את ההרשמה כעת. נסו שוב מאוחר יותר"
+            });
+        }
 
         res.status(201).json({
             message: "ההרשמה התקבלה וממתינה לאישור רכזת",
@@ -184,7 +239,8 @@ router.post("/login", async (req, res) => {
                 id: user._id,
                 fullName: user.fullName,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                facilitatorLevel: user.facilitatorLevel
             }
         });
 
@@ -199,13 +255,13 @@ router.post("/login", async (req, res) => {
 
 // קבלת משתמשות שממתינות לאישור - לרכזת בלבד
 router.get("/pending", authenticateToken, requireCoordinator, async (req, res) => {
-   
-   
+
+
     try {
         const users = await User.find({
-    approvalStatus: "pending",
-    coordinatorId: req.user.userId
-}).select("-passwordHash");
+            approvalStatus: "pending",
+            coordinatorId: req.user.userId
+        }).select("-passwordHash");
 
         res.json(users);
     } catch (error) {
@@ -218,35 +274,49 @@ router.get("/pending", authenticateToken, requireCoordinator, async (req, res) =
 });
 
 
+
 // אישור משתמשת - לרכזת בלבד
 router.patch("/:id/approve", authenticateToken, requireCoordinator, async (req, res) => {
     try {
-const user = await User.findOne({
-    _id: req.params.id,
-    coordinatorId: req.user.userId
-});
+        const { facilitatorLevel } = req.body;
+
+        if (!["young", "senior"].includes(facilitatorLevel)) {
+            return res.status(400).json({
+                message: "יש לבחור אם המנחה צעירה או בוגרת"
+            });
+        }
+
+        const user = await User.findOne({
+            _id: req.params.id,
+            coordinatorId: req.user.userId,
+            role: "facilitator"
+        });
+
         if (!user) {
             return res.status(404).json({
-                message: "המשתמשת לא נמצאה או אינה משויכת לרכזת זו"            });
+                message: "המנחה לא נמצאה או אינה משויכת לרכזת זו"
+            });
         }
 
         if (user.approvalStatus !== "pending") {
             return res.status(400).json({
-                message: "המשתמשת אינה ממתינה לאישור"
+                message: "המנחה אינה ממתינה לאישור"
             });
         }
 
+        user.facilitatorLevel = facilitatorLevel;
         user.approvalStatus = "approved";
 
         await user.save();
 
         res.json({
-            message: "המשתמשת אושרה בהצלחה",
+            message: "המנחה אושרה בהצלחה",
             user: {
                 id: user._id,
                 fullName: user.fullName,
                 email: user.email,
-                approvalStatus: user.approvalStatus
+                approvalStatus: user.approvalStatus,
+                facilitatorLevel: user.facilitatorLevel
             }
         });
 
@@ -254,10 +324,11 @@ const user = await User.findOne({
         console.error("Approve user error:", error.message);
 
         res.status(500).json({
-            message: "שגיאה באישור המשתמשת"
+            message: "שגיאה באישור המנחה"
         });
     }
 });
+
 
 // קבלת רשימת המשתמשים הפעילים
 router.get("/", authenticateToken, requireCoordinator, async (req, res) => {
@@ -276,3 +347,5 @@ router.get("/", authenticateToken, requireCoordinator, async (req, res) => {
     }
 });
 module.exports = router;
+module.exports.authenticateToken = authenticateToken;
+module.exports.requireCoordinator = requireCoordinator;

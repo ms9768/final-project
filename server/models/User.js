@@ -24,10 +24,9 @@ const userSchema = new mongoose.Schema(
 
         role: {
             type: String,
-            enum: ["facilitator", "coordinator"],
+            enum: ["facilitator", "coordinator", "payment_manager"],
             required: true
         },
-
 
         coordinatorId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -36,17 +35,51 @@ const userSchema = new mongoose.Schema(
         },
 
         coordinatorCode: {
-    type: String,
-    unique: true,
-    sparse: true,
-    trim: true,
-    uppercase: true
-},
+            type: String,
+            unique: true,
+            sparse: true,
+            trim: true,
+            uppercase: true
+        },
+
         approvalStatus: {
             type: String,
             enum: ["pending", "approved", "rejected"],
             default: "pending",
             required: true
+        },
+
+        // סיווג המנחה לצורך חישוב התשלום
+        facilitatorLevel: {
+            type: String,
+            enum: ["young", "senior"],
+            default: null
+        },
+
+        bankDetailsStatus: {
+            type: String,
+            enum: ["not_submitted", "provided"],
+            default: "not_submitted",
+            required: true
+        },
+
+        bankDetailsEncrypted: {
+            type: String,
+            default: null,
+            select: false
+        },
+
+        bankDetailsTokenHash: {
+            type: String,
+            default: null,
+            index: true,
+            select: false
+        },
+
+        bankDetailsTokenExpiresAt: {
+            type: Date,
+            default: null,
+            select: false
         },
 
         isActive: {

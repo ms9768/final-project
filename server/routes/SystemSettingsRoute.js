@@ -6,12 +6,22 @@ const {
   updateSystemSettings,
 } = require("../controllers/SystemSettingsController");
 
+const {
+  authenticateToken,
+  requireCoordinator,
+} = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-// קבלת הגדרות המערכת
-router.get("/", getSystemSettings);
+// קבלת הגדרות המערכת – למשתמשות מחוברות
+router.get("/", authenticateToken, getSystemSettings);
 
-// עדכון הגדרות המערכת
-router.patch("/", updateSystemSettings);
+// עדכון הגדרות המערכת – לרכזת בלבד
+router.patch(
+  "/",
+  authenticateToken,
+  requireCoordinator,
+  updateSystemSettings
+);
 
 module.exports = router;

@@ -6,7 +6,6 @@ const getSystemSettings = async (req, res) => {
   try {
     let settings = await SystemSettings.findOne();
 
-    // אם עדיין אין הגדרות במסד הנתונים, ניצור הגדרות ברירת מחדל
     if (!settings) {
       settings = await SystemSettings.create({});
     }
@@ -26,27 +25,67 @@ const updateSystemSettings = async (req, res) => {
   try {
     const {
       refreshmentsBudgetPerParticipant,
-      facilitatorPaymentPerMeeting,
+      youngFacilitatorPaymentPerMeeting,
+      seniorFacilitatorPaymentPerMeeting,
+      seniorProlongedConversationBonus,
+      rentalPaymentPerMeeting,
+      deliveryEmail,
     } = req.body;
 
-    if (
-      refreshmentsBudgetPerParticipant !== undefined &&
-      (typeof refreshmentsBudgetPerParticipant !== "number" ||
-        refreshmentsBudgetPerParticipant < 0)
-    ) {
-      return res.status(400).json({
+    const settingsToValidate = [
+      {
+        value: refreshmentsBudgetPerParticipant,
         message: "Invalid refreshments budget",
-      });
+      },
+      {
+        value: youngFacilitatorPaymentPerMeeting,
+        message: "Invalid young facilitator payment",
+      },
+      {
+        value: seniorFacilitatorPaymentPerMeeting,
+        message: "Invalid senior facilitator payment",
+      },
+      {
+        value: seniorProlongedConversationBonus,
+        message: "Invalid prolonged conversation bonus",
+      },
+      {
+        value: rentalPaymentPerMeeting,
+        message: "Invalid rental payment",
+      },
+    ];
+
+    for (const setting of settingsToValidate) {
+      if (
+        setting.value !== undefined &&
+        (typeof setting.value !== "number" ||
+          !Number.isFinite(setting.value) ||
+          setting.value < 0)
+      ) {
+        return res.status(400).json({
+          message: setting.message,
+        });
+      }
     }
 
-    if (
-      facilitatorPaymentPerMeeting !== undefined &&
-      (typeof facilitatorPaymentPerMeeting !== "number" ||
-        facilitatorPaymentPerMeeting < 0)
-    ) {
-      return res.status(400).json({
-        message: "Invalid facilitator payment",
-      });
+    // בדיקת כתובת המייל של המשלוחן
+    if (deliveryEmail !== undefined) {
+      if (typeof deliveryEmail !== "string") {
+        return res.status(400).json({
+          message: "Invalid delivery email",
+        });
+      }
+
+      const normalizedEmail = deliveryEmail.trim().toLowerCase();
+
+      if (
+        normalizedEmail !== "" &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
+      ) {
+        return res.status(400).json({
+          message: "Invalid delivery email",
+        });
+      }
     }
 
     let settings = await SystemSettings.findOne();
@@ -60,9 +99,28 @@ const updateSystemSettings = async (req, res) => {
         refreshmentsBudgetPerParticipant;
     }
 
-    if (facilitatorPaymentPerMeeting !== undefined) {
-      settings.facilitatorPaymentPerMeeting =
-        facilitatorPaymentPerMeeting;
+    if (youngFacilitatorPaymentPerMeeting !== undefined) {
+      settings.youngFacilitatorPaymentPerMeeting =
+        youngFacilitatorPaymentPerMeeting;
+    }
+
+    if (seniorFacilitatorPaymentPerMeeting !== undefined) {
+      settings.seniorFacilitatorPaymentPerMeeting =
+        seniorFacilitatorPaymentPerMeeting;
+    }
+
+    if (seniorProlongedConversationBonus !== undefined) {
+      settings.seniorProlongedConversationBonus =
+        seniorProlongedConversationBonus;
+    }
+
+    if (rentalPaymentPerMeeting !== undefined) {
+      settings.rentalPaymentPerMeeting =
+        rentalPaymentPerMeeting;
+    }
+
+    if (deliveryEmail !== undefined) {
+      settings.deliveryEmail = deliveryEmail.trim().toLowerCase();
     }
 
     await settings.save();

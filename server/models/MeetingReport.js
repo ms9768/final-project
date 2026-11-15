@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const meetingReportSchema = new mongoose.Schema(
@@ -5,6 +6,33 @@ const meetingReportSchema = new mongoose.Schema(
     groupId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Group",
+      required: true,
+    },
+
+    schoolName: {
+      type: String,
+      trim: true,
+    },
+
+    className: {
+      type: String,
+      trim: true,
+    },
+
+    groupNumber: {
+      type: Number,
+      enum: [1, 2, 3],
+    },
+
+    facilitatorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    coordinatorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
 
@@ -23,6 +51,40 @@ const meetingReportSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
+    },
+
+    meetingLocation: {
+      type: String,
+      enum: ["facilitator_home", "organization_venue"],
+      required: true,
+    },
+
+    prolongedConversation: {
+      type: Boolean,
+      default: false,
+    },
+
+    paymentAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["not_started", "paid"],
+      default: "not_started",
+    },
+
+    paymentDate: {
+      type: Date,
+      default: null,
+    },
+
+    paidBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
 
     refreshmentsCost: {
@@ -47,12 +109,10 @@ const meetingReportSchema = new mongoose.Schema(
         type: String,
         default: "",
       },
-
       contentType: {
         type: String,
         default: "",
       },
-
       data: {
         type: Buffer,
         default: null,
@@ -76,7 +136,6 @@ const meetingReportSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // היסטוריית שינויים בסטטוס הדיווח
     statusHistory: [
       {
         status: {
@@ -89,18 +148,15 @@ const meetingReportSchema = new mongoose.Schema(
           ],
           required: true,
         },
-
         coordinatorNotes: {
           type: String,
           default: "",
         },
-
         changedBy: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           default: null,
         },
-
         changedAt: {
           type: Date,
           default: Date.now,

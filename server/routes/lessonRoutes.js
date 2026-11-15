@@ -2,6 +2,8 @@
 const express = require("express");
 const router = express.Router();
 const Lesson = require("../models/Lesson");
+const User = require("../models/User");
+const { authenticateToken, requireCoordinator } = require("./userRoutes");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -166,20 +168,36 @@ router.get("/preview/:filename", async (req, res) => {
 });
 
 // קבלת מערך שיעור לפי מזהה
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
     try {
         const lesson = await Lesson.findById(req.params.id);
 
         if (!lesson) {
-            return res.status(404).json({
-                message: "Lesson not found"
+            return res.status(404).json({ message: "המערך לא נמצא" });
+        }
+
+        // לרכזת יש גישה לכל המערכים
+        if (req.user.role === "coordinator") {
+            return res.json(lesson);
+        }
+
+        // מנחה יכולה לפתוח רק מערך שפתוח עבורה
+        const hasAccess =
+            lesson.isVisible &&
+            lesson.allowedUsers.some(
+                id => id.toString() === req.user.userId
+            );
+
+        if (!hasAccess) {
+            return res.status(403).json({
+                message: "אין לך הרשאה לצפות במערך זה"
             });
         }
 
-        res.status(200).json(lesson);
+        res.json(lesson);
     } catch (error) {
-        res.status(400).json({
-            message: "Failed to retrieve lesson",
+        res.status(500).json({
+            message: "שגיאה בטעינת המערך",
             error: error.message
         });
     }
@@ -203,15 +221,19 @@ router.get("/admin/all", async (req, res) => {
 });
 
 
-// קבלת מערכי השיעור המוצגים באתר
-router.get("/", async (req, res) => {
+// קבלת מערכי השיעור הפתוחים למשתמש המחובר
+router.get("/", authenticateToken, async (req, res) => {
     try {
         const search = req.query.search?.trim();
         const track = req.query.track?.trim();
 
-        const filter = {
-            isVisible: true
-        };
+        const filter = {};
+
+        // מנחה רואה רק מערכים גלויים שפתוחים עבורה
+        if (req.user.role === "facilitator") {
+            filter.isVisible = true;
+            filter.allowedUsers = req.user.userId;
+        }
 
         if (search) {
             filter.$or = [
@@ -306,7 +328,7 @@ router.patch("/:id/hide", async (req, res) => {
 
 
 
- // החזרת מערך שיעור למצב גלוי
+// החזרת מערך שיעור למצב גלוי
 router.patch("/:id/show", async (req, res) => {
     try {
         const lesson = await Lesson.findByIdAndUpdate(
@@ -386,4 +408,96 @@ router.post("/upload", (req, res) => {
     });
 });
 
+// פתיחת גישה למערך עבור מנחה
+router.patch(
+    "/:id/access/:userId",
+    authenticateToken,
+    requireCoordinator,
+    async (req, res) => {
+        try {
+            const lesson = await Lesson.findById(req.params.id);
+
+            if (!lesson) {
+                return res.status(404).json({
+                    message: "המערך לא נמצא"
+                });
+            }
+
+            const facilitator = await User.findOne({
+                _id: req.params.userId,
+                coordinatorId: req.user.userId,
+                role: "facilitator",
+                approvalStatus: "approved",
+                isActive: true
+            });
+
+            if (!facilitator) {
+                return res.status(404).json({
+                    message: "המנחה לא נמצאה או אינה משויכת לרכזת זו"
+                });
+            }
+
+            if (!lesson.allowedUsers.some(
+                id => id.toString() === facilitator._id.toString()
+            )) {
+                lesson.allowedUsers.push(facilitator._id);
+                await lesson.save();
+            }
+
+            res.json({
+                message: "הגישה למערך נפתחה בהצלחה"
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: "שגיאה בפתיחת הגישה",
+                error: error.message
+            });
+        }
+    }
+);
+
+// סגירת גישה למערך עבור מנחה
+router.patch(
+    "/:id/access/:userId/close",
+    authenticateToken,
+    requireCoordinator,
+    async (req, res) => {
+        try {
+            const lesson = await Lesson.findById(req.params.id);
+
+            if (!lesson) {
+                return res.status(404).json({
+                    message: "המערך לא נמצא"
+                });
+            }
+
+            const facilitator = await User.findOne({
+                _id: req.params.userId,
+                coordinatorId: req.user.userId,
+                role: "facilitator"
+            });
+
+            if (!facilitator) {
+                return res.status(404).json({
+                    message: "המנחה לא נמצאה או אינה משויכת לרכזת זו"
+                });
+            }
+
+            lesson.allowedUsers = lesson.allowedUsers.filter(
+                id => id.toString() !== facilitator._id.toString()
+            );
+
+            await lesson.save();
+
+            res.json({
+                message: "הגישה למערך נסגרה בהצלחה"
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: "שגיאה בסגירת הגישה",
+                error: error.message
+            });
+        }
+    }
+);
 module.exports = router;

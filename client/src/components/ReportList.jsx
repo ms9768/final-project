@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { API_BASE_URL } from "../services/apiConfig";
 import CoordinatorActions from "./CoordinatorActions";
 
 function ReportList({
@@ -24,8 +25,15 @@ function ReportList({
     try {
       setHistoryLoading(true);
 
+      const token = sessionStorage.getItem("authToken");
+
       const response = await fetch(
-        `http://localhost:5600/api/meeting-reports/${reportId}`
+        `${API_BASE_URL}/api/meeting-reports/${reportId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await response.json();
@@ -39,6 +47,54 @@ function ReportList({
       alert(err.message);
     } finally {
       setHistoryLoading(false);
+    }
+  }
+
+  // הצגת קבלה עם אסימון ההתחברות
+  async function viewReceipt(reportId) {
+    const receiptWindow = window.open("about:blank", "_blank");
+
+    if (!receiptWindow) {
+      alert("הדפדפן חסם את פתיחת הקבלה. יש לאפשר חלונות קופצים.");
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem("authToken");
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/meeting-reports/${reportId}/receipt`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        let message = "שגיאה בטעינת הקבלה";
+
+        try {
+          const data = await response.json();
+          message = data.message || message;
+        } catch {
+          // אין תשובת JSON
+        }
+
+        throw new Error(message);
+      }
+
+      const fileBlob = await response.blob();
+      const fileUrl = URL.createObjectURL(fileBlob);
+
+      receiptWindow.location.href = fileUrl;
+
+      setTimeout(() => {
+        URL.revokeObjectURL(fileUrl);
+      }, 60000);
+    } catch (err) {
+      receiptWindow.close();
+      alert(err.message);
     }
   }
 
@@ -68,6 +124,8 @@ function ReportList({
         <table className="reports-table">
           <thead>
             <tr>
+              {isCoordinatorView && <th>שם המנחה</th>}
+
               <th>נושא הפגישה</th>
               <th>קבוצה</th>
               <th>תאריך</th>
@@ -75,7 +133,19 @@ function ReportList({
               <th>סטטוס</th>
               <th>קבלה</th>
 
-              {!isCoordinatorView && <th>הערות רכזת</th>}
+              {isCoordinatorView && (
+                <>
+                  <th>סכום לתשלום</th>
+                  <th>מצב תשלום</th>
+                </>
+              )}
+
+              {!isCoordinatorView && (
+                <>
+                  <th>הערות רכזת</th>
+                  <th>מצב תשלום</th>
+                </>
+              )}
 
               <th>פעולות</th>
             </tr>
@@ -88,13 +158,27 @@ function ReportList({
                 report.status === "needs_correction";
 
               const groupName = report.groupId?.name || "—";
-              const hasReceipt = Boolean(report.receipt?.fileName);
 
-              const receiptUrl =
-                `http://localhost:5600/api/meeting-reports/${report._id}/receipt`;
+              const facilitatorName =
+                report.facilitatorId?.fullName || "—";
+              const facilitatorEmail =
+                report.facilitatorId?.email || "—";
+
+              const hasReceipt = Boolean(report.receipt?.fileName);
+              const isApproved = report.status === "approved";
+              const isPaid = report.paymentStatus === "paid";
 
               return (
                 <tr key={report._id}>
+                  {isCoordinatorView && (
+                    <td>
+                      <div>{facilitatorName}</div>
+                      <small className="facilitator-email">
+                        {facilitatorEmail}
+                      </small>
+                    </td>
+                  )}
+
                   <td className="topic-cell">{report.topic}</td>
 
                   <td>{groupName}</td>
@@ -113,14 +197,13 @@ function ReportList({
 
                   <td>
                     {hasReceipt ? (
-                      <a
-                        className="receipt-link"
-                        href={receiptUrl}
-                        target="_blank"
-                        rel="noreferrer"
+                      <button
+                        type="button"
+                        className="table-action-button"
+                        onClick={() => viewReceipt(report._id)}
                       >
                         צפייה בקבלה
-                      </a>
+                      </button>
                     ) : (
                       <span className="no-receipt">
                         לא הועלתה קבלה
@@ -128,12 +211,47 @@ function ReportList({
                     )}
                   </td>
 
+                  {isCoordinatorView && (
+                    <>
+                      <td>
+                        {isApproved
+                          ? `${Number(report.paymentAmount || 0).toLocaleString("he-IL")} ₪`
+                          : "יחושב לאחר אישור"}
+                      </td>
+
+                      <td>
+                        {!isApproved ? (
+                          <span className="no-action">—</span>
+                        ) : (
+                          <span
+                            className={`status-badge ${
+                              isPaid ? "approved" : "pending"
+                            }`}
+                          >
+                            {isPaid ? "שולם" : "לא שולם"}
+                          </span>
+                        )}
+                      </td>
+                    </>
+                  )}
+
                   {!isCoordinatorView && (
-                    <td className="coordinator-notes-cell">
-                      {report.coordinatorNotes || (
-                        <span className="no-action">—</span>
-                      )}
-                    </td>
+                    <>
+                      <td className="coordinator-notes-cell">
+                        {report.coordinatorNotes || (
+                          <span className="no-action">—</span>
+                        )}
+                      </td>
+                      <td className="payment-status-cell">
+                        <span
+                          className={`status-badge ${
+                            isPaid ? "approved" : "pending"
+                          }`}
+                        >
+                          {isPaid ? "שולם" : "ממתין לתשלום"}
+                        </span>
+                      </td>
+                    </>
                   )}
 
                   <td className="actions-cell">

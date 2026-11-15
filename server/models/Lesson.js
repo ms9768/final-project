@@ -55,7 +55,13 @@ const lessonSchema = new mongoose.Schema(
         isVisible: {
             type: Boolean,
             default: true
-        }
+        },
+           allowedUsers: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            }
+        ]
     },
     {
         timestamps: true

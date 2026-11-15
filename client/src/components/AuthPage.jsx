@@ -1,7 +1,8 @@
 
 import { useState } from 'react'
+import { API_BASE_URL } from '../services/apiConfig'
 
-const API_URL = 'http://localhost:7001/api/users'
+const API_URL = `${API_BASE_URL}/api/users`
 
 function AuthPage({ onLogin }) {
     const [isRegister, setIsRegister] = useState(false)

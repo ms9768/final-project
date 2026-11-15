@@ -1,12 +1,16 @@
 
 import { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:5600/api/systemsettings";
+const API_URL = "http://localhost:7001/api/systemsettings";
 
 function SystemSettings() {
   const [settings, setSettings] = useState({
     refreshmentsBudgetPerParticipant: 12,
-    facilitatorPaymentPerMeeting: 0,
+    youngFacilitatorPaymentPerMeeting: 0,
+    seniorFacilitatorPaymentPerMeeting: 0,
+    seniorProlongedConversationBonus: 0,
+    rentalPaymentPerMeeting: 0,
+    deliveryEmail: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -19,7 +23,12 @@ function SystemSettings() {
 
   async function loadSettings() {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+        },
+      });
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -29,8 +38,15 @@ function SystemSettings() {
       setSettings({
         refreshmentsBudgetPerParticipant:
           data.refreshmentsBudgetPerParticipant,
-        facilitatorPaymentPerMeeting:
-          data.facilitatorPaymentPerMeeting,
+        youngFacilitatorPaymentPerMeeting:
+          data.youngFacilitatorPaymentPerMeeting,
+        seniorFacilitatorPaymentPerMeeting:
+          data.seniorFacilitatorPaymentPerMeeting,
+        seniorProlongedConversationBonus:
+          data.seniorProlongedConversationBonus ?? 0,
+        rentalPaymentPerMeeting:
+          data.rentalPaymentPerMeeting ?? 0,
+        deliveryEmail: data.deliveryEmail || "",
       });
     } catch (error) {
       setMessage(error.message);
@@ -58,14 +74,25 @@ function SystemSettings() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
           refreshmentsBudgetPerParticipant: Number(
             settings.refreshmentsBudgetPerParticipant
           ),
-          facilitatorPaymentPerMeeting: Number(
-            settings.facilitatorPaymentPerMeeting
+          youngFacilitatorPaymentPerMeeting: Number(
+            settings.youngFacilitatorPaymentPerMeeting
           ),
+          seniorFacilitatorPaymentPerMeeting: Number(
+            settings.seniorFacilitatorPaymentPerMeeting
+          ),
+          seniorProlongedConversationBonus: Number(
+            settings.seniorProlongedConversationBonus
+          ),
+          rentalPaymentPerMeeting: Number(
+            settings.rentalPaymentPerMeeting
+          ),
+          deliveryEmail: settings.deliveryEmail.trim(),
         }),
       });
 
@@ -78,8 +105,15 @@ function SystemSettings() {
       setSettings({
         refreshmentsBudgetPerParticipant:
           data.refreshmentsBudgetPerParticipant,
-        facilitatorPaymentPerMeeting:
-          data.facilitatorPaymentPerMeeting,
+        youngFacilitatorPaymentPerMeeting:
+          data.youngFacilitatorPaymentPerMeeting,
+        seniorFacilitatorPaymentPerMeeting:
+          data.seniorFacilitatorPaymentPerMeeting,
+        seniorProlongedConversationBonus:
+          data.seniorProlongedConversationBonus ?? 0,
+        rentalPaymentPerMeeting:
+          data.rentalPaymentPerMeeting ?? 0,
+        deliveryEmail: data.deliveryEmail || "",
       });
 
       setMessage("ההגדרות נשמרו בהצלחה!");
@@ -90,9 +124,7 @@ function SystemSettings() {
     }
   }
 
-  if (loading) {
-    return <p>טוען הגדרות...</p>;
-  }
+  if (loading) return <p>טוען הגדרות...</p>;
 
   return (
     <section className="settings-panel">
@@ -113,15 +145,69 @@ function SystemSettings() {
         </label>
 
         <label>
-          תשלום למנחה עבור פגישה (₪)
+          תשלום למנחה צעירה עבור פגישה (₪)
           <input
             type="number"
-            name="facilitatorPaymentPerMeeting"
+            name="youngFacilitatorPaymentPerMeeting"
             min="0"
             step="0.01"
-            value={settings.facilitatorPaymentPerMeeting}
+            value={settings.youngFacilitatorPaymentPerMeeting}
             onChange={handleChange}
             required
+          />
+        </label>
+
+        <label>
+          תשלום למנחה בוגרת עבור פגישה (₪)
+          <input
+            type="number"
+            name="seniorFacilitatorPaymentPerMeeting"
+            min="0"
+            step="0.01"
+            value={settings.seniorFacilitatorPaymentPerMeeting}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          תוספת למנחה בוגרת עבור שיחה ממושכת (₪)
+          <input
+            type="number"
+            name="seniorProlongedConversationBonus"
+            min="0"
+            step="0.01"
+            value={settings.seniorProlongedConversationBonus}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          תשלום שכירות עבור כל פגישה (₪)
+          <input
+            type="number"
+            name="rentalPaymentPerMeeting"
+            min="0"
+            step="0.01"
+            value={settings.rentalPaymentPerMeeting}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <hr />
+
+        <h3>הגדרות משלוחים</h3>
+
+        <label>
+          כתובת מייל של המשלוחן
+          <input
+            type="email"
+            name="deliveryEmail"
+            value={settings.deliveryEmail}
+            onChange={handleChange}
+            placeholder="delivery@example.com"
           />
         </label>
 

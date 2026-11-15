@@ -1,5 +1,18 @@
-const API_URL = "http://localhost:5600/api/meeting-reports";
-const GROUPS_URL = "http://localhost:5600/api/groups";
+
+import { API_BASE_URL } from "./apiConfig";
+
+const API_URL = `${API_BASE_URL}/api/meeting-reports`;
+const GROUPS_URL = `${API_BASE_URL}/api/groups`;
+
+// הוספת אסימון ההתחברות לכותרות הבקשה
+function getAuthHeaders(extraHeaders = {}) {
+  const token = sessionStorage.getItem("authToken");
+
+  return {
+    ...extraHeaders,
+    Authorization: `Bearer ${token}`,
+  };
+}
 
 // פונקציה מרכזית לטיפול בתשובות מהשרת
 async function handleResponse(response, defaultMessage) {
@@ -12,9 +25,7 @@ async function handleResponse(response, defaultMessage) {
   }
 
   if (!response.ok) {
-    throw new Error(
-      data?.message || defaultMessage
-    );
+    throw new Error(data?.message || defaultMessage);
   }
 
   return data;
@@ -22,7 +33,9 @@ async function handleResponse(response, defaultMessage) {
 
 // קבלת כל הדיווחים
 export async function getReports() {
-  const response = await fetch(API_URL);
+  const response = await fetch(API_URL, {
+    headers: getAuthHeaders(),
+  });
 
   return await handleResponse(
     response,
@@ -33,7 +46,10 @@ export async function getReports() {
 // קבלת הקבוצות של מנחה לפי מזהה
 export async function getGroups(lecturerId) {
   const response = await fetch(
-    `${GROUPS_URL}/lecturer/${lecturerId}`
+    `${GROUPS_URL}/lecturer/${lecturerId}`,
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return await handleResponse(
@@ -46,11 +62,9 @@ export async function getGroups(lecturerId) {
 export async function createReport(reportData) {
   const response = await fetch(API_URL, {
     method: "POST",
-
-    headers: {
+    headers: getAuthHeaders({
       "Content-Type": "application/json",
-    },
-
+    }),
     body: JSON.stringify(reportData),
   });
 
@@ -60,14 +74,13 @@ export async function createReport(reportData) {
   );
 }
 
-
 // עדכון דיווח קיים
 export async function updateReport(reportId, reportData) {
   const response = await fetch(`${API_URL}/${reportId}`, {
     method: "PUT",
-    headers: {
+    headers: getAuthHeaders({
       "Content-Type": "application/json",
-    },
+    }),
     body: JSON.stringify(reportData),
   });
 
@@ -76,7 +89,6 @@ export async function updateReport(reportId, reportData) {
     "שגיאה בעדכון הדיווח"
   );
 }
-
 
 // עדכון סטטוס דיווח
 export async function updateReportStatus(
@@ -88,11 +100,9 @@ export async function updateReportStatus(
     `${API_URL}/${reportId}/status`,
     {
       method: "PATCH",
-
-      headers: {
+      headers: getAuthHeaders({
         "Content-Type": "application/json",
-      },
-
+      }),
       body: JSON.stringify({
         status,
         coordinatorNotes,
@@ -116,6 +126,7 @@ export async function uploadReceipt(reportId, file) {
     `${API_URL}/${reportId}/receipt`,
     {
       method: "POST",
+      headers: getAuthHeaders(),
       body: formData,
     }
   );
@@ -129,7 +140,10 @@ export async function uploadReceipt(reportId, file) {
 // קבלת סיכום התשלום של מנחה מסוימת
 export async function getLecturerPayment(lecturerId) {
   const response = await fetch(
-    `${API_URL}/lecturer/${lecturerId}/payment`
+    `${API_URL}/lecturer/${lecturerId}/payment`,
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return await handleResponse(
@@ -141,7 +155,10 @@ export async function getLecturerPayment(lecturerId) {
 // קבלת סיכום התשלומים של כל המנחות
 export async function getAllLecturersPayments() {
   const response = await fetch(
-    `${API_URL}/lecturers/payments`
+    `${API_URL}/lecturers/payments`,
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return await handleResponse(
@@ -149,9 +166,12 @@ export async function getAllLecturersPayments() {
     "שגיאה בטעינת התשלומים של המנחות"
   );
 }
+
 // קבלת דיווח מלא לפי מזהה
 export async function getReportById(reportId) {
-  const response = await fetch(`${API_URL}/${reportId}`);
+  const response = await fetch(`${API_URL}/${reportId}`, {
+    headers: getAuthHeaders(),
+  });
 
   return await handleResponse(
     response,

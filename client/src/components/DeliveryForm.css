@@ -1,0 +1,141 @@
+
+.delivery-management {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 20px;
+  color: #352044;
+}
+
+.delivery-header {
+  margin-bottom: 25px;
+}
+
+.delivery-header h1 {
+  color: #61337c;
+  margin-bottom: 8px;
+}
+
+.delivery-header p {
+  color: #756780;
+}
+
+.delivery-form-card,
+.delivery-item {
+  background: white;
+  border: 1px solid #eee5f5;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 16px rgba(70, 40, 90, 0.06);
+}
+
+.delivery-form-card h2,
+.delivery-list-section h2 {
+  color: #61337c;
+  margin-top: 0;
+}
+
+.delivery-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.delivery-management label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-weight: 600;
+}
+
+.delivery-management input,
+.delivery-management textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px;
+  border: 1px solid #d9cce4;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.delivery-management input:focus,
+.delivery-management textarea:focus {
+  outline: 2px solid #bde9df;
+  border-color: #398f83;
+}
+
+.delivery-full-width {
+  margin-top: 18px;
+}
+
+.delivery-management button {
+  margin-top: 18px;
+  padding: 12px 25px;
+  background: #61337c;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.delivery-management button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delivery-list-header,
+.delivery-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.delivery-list-header span {
+  color: #398f83;
+  font-size: 14px;
+}
+
+.delivery-status {
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #eee5f5;
+  color: #61337c;
+  font-size: 14px;
+}
+
+.delivery-status.delivered {
+  background: #bde9df;
+  color: #245f56;
+}
+
+.delivery-status.on_the_way {
+  background: #fff0d5;
+  color: #80551b;
+}
+
+.delivery-photo {
+  margin-top: 15px;
+}
+
+.delivery-photo img {
+  display: block;
+  width: 180px;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+@media (max-width: 650px) {
+  .delivery-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-form-card,
+  .delivery-item {
+    padding: 16px;
+  }
+}
