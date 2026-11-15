@@ -80,6 +80,10 @@ router.post("/register", async (req, res) => {
             email: normalizedEmail
         });
 
+        console.log("EMAIL CHECK:", {
+            emailFound: Boolean(existingUser)
+        });
+
 
         if (
             typeof coordinatorCode !== "string" ||
@@ -163,6 +167,12 @@ router.post("/register", async (req, res) => {
             }
         });
     } catch (error) {
+        console.log("DUPLICATE ERROR DETAILS:", {
+            keyPattern: error.keyPattern,
+            keyValue: error.keyValue
+        });
+
+
         if (error.code === 11000) {
             return res.status(409).json({
                 message: "כתובת המייל כבר רשומה במערכת"
