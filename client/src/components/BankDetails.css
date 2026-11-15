@@ -1,0 +1,126 @@
+/* =========================================================
+   פרטי חשבון בנק (bd)
+   ========================================================= */
+
+.bd-card {
+  max-width: 760px;
+  margin-inline: auto;
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: 0 18px 50px rgba(74, 31, 110, 0.14);
+  padding: 30px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bd-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bd-head > div {
+  flex: 1;
+}
+
+.bd-lock {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--hp-mint-300);
+  transform: rotate(-6deg);
+  flex-shrink: 0;
+}
+
+.bd-lock svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: var(--hp-purple-900);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bd-eyebrow {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3a9e8d;
+}
+
+.bd-head h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.bd-tag-ok { background: var(--hp-mint-100); color: #1f6b5d; }
+.bd-tag-missing { background: #fff4d1; color: #8a6200; }
+
+.bd-intro {
+  padding: 12px 16px;
+  border-radius: var(--hp-radius-md);
+  background: var(--hp-mint-100);
+  color: #2c5f55;
+  line-height: 1.6;
+}
+
+.bd-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bd-form .hp-btn {
+  align-self: flex-start;
+}
+
+/* מספרי בנק/סניף/חשבון - ספרות מרווחות */
+.bd-grid input[inputmode='numeric'] {
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.bd-note {
+  color: #7c6f8c;
+  font-size: 0.9rem;
+}
+
+/* ---------- עמוד הקישור הציבורי ---------- */
+
+.bd-public {
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(255, 255, 255, 0.14), transparent 35%),
+    linear-gradient(140deg, var(--hp-purple-700), var(--hp-purple-500));
+}
+
+.bd-public-logo {
+  height: 70px;
+  background: var(--hp-white);
+  border-radius: 20px;
+  padding: 6px 14px;
+}
+
+.bd-public .bd-card {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .bd-card {
+    padding: 22px 16px;
+  }
+
+  .bd-form .hp-btn {
+    align-self: stretch;
+    justify-content: center;
+  }
+}

@@ -1,6 +1,9 @@
 
 import { useEffect, useState } from "react";
 import "./MeetingReports.css";
+import "./components/ReportsPage.css";
+import PageShell from "./components/ui/PageShell";
+import { DashboardIcons } from "./components/ui/Decor";
 import ReportForm from "./components/ReportForm";
 import ReportList from "./components/ReportList";
 import PaymentSummary from "./components/PaymentSummary";
@@ -16,7 +19,7 @@ import {
   getAllLecturersPayments,
 } from "./services/meetingReportService";
 
-function MeetingReportsPage({ initialShowForm = false }) {
+function MeetingReportsPage({ initialShowForm = false, onBack, backLabel }) {
   const currentUser = JSON.parse(
     sessionStorage.getItem("currentUser") || "null"
   );
@@ -176,59 +179,61 @@ function MeetingReportsPage({ initialShowForm = false }) {
     {
       title: 'סה"כ דיווחים',
       value: reports.length,
-      icon: "▤",
-      color: "blue",
+      icon: "reports",
+      color: "purple",
     },
     {
       title: "דיווחים ממתינים לאישור",
       value: pendingReports.length,
-      icon: "◷",
-      color: "gold",
+      icon: "meetings",
+      color: "yellow",
     },
     {
       title: "סכום לתשלום כולל שכירות",
       value: `${totalPayments.toLocaleString("he-IL")} ₪`,
-      icon: "₪",
-      color: "green",
+      icon: "payments",
+      color: "mint",
     },
   ];
 
   return (
-    <main className="meeting-reports-page">
-      <header className="page-header">
-        <div className="brand">
-          <div className="brand-symbol">✧</div>
-          <div>
-            <h1>מערכת דיווחי פגישות</h1>
-            <p>יחד מתכננים, משפיעים ומקדמים</p>
-          </div>
-        </div>
-      </header>
+    <PageShell
+      className="mr"
+      eyebrow={isCoordinatorView ? "מנחות ופגישות" : "האזור האישי"}
+      title={isCoordinatorView ? "דיווחי פגישות" : "הדיווחים שלי"}
+      subtitle="יחד מתכננים, משפיעים ומקדמים"
+      onBack={onBack}
+      backLabel={backLabel}
+    >
+      <section className="mr-stats">
+        {stats.map((stat) => {
+          const Icon = DashboardIcons[stat.icon];
+
+          return (
+            <div className={`mr-stat mr-stat-${stat.color}`} key={stat.title}>
+              <span className="mr-stat-icon">{Icon && <Icon />}</span>
+              <div>
+                <strong>{loading ? "…" : stat.value}</strong>
+                <span>{stat.title}</span>
+              </div>
+            </div>
+          );
+        })}
+      </section>
 
       {message && (
-        <div className="success-message">{message}</div>
+        <p className="hp-alert hp-alert-success" role="status">
+          <span aria-hidden="true">✓</span>
+          {message}
+        </p>
       )}
 
       {error && (
-        <div className="error-message">{error}</div>
+        <p className="hp-alert hp-alert-error" role="alert">
+          <span aria-hidden="true">!</span>
+          {error}
+        </p>
       )}
-
-      <section className="stats-grid">
-        {stats.map((stat) => (
-          <div className="stat-card" key={stat.title}>
-            <div className={`stat-icon ${stat.color}`}>
-              {stat.icon}
-            </div>
-
-            <div className="stat-divider" />
-
-            <div className="stat-content">
-              <strong>{stat.value}</strong>
-              <span>{stat.title}</span>
-            </div>
-          </div>
-        ))}
-      </section>
 
       {!isCoordinatorView && showForm && (
         <ReportForm
@@ -240,25 +245,20 @@ function MeetingReportsPage({ initialShowForm = false }) {
         />
       )}
 
-      <div className="dashboard-grid">
-        <section className="reports-panel">
-          <div className="panel-heading">
-            <div>
-              <span className="heading-icon">▦</span>
-              <h2>
-                {isCoordinatorView
-                  ? "דיווחים לטיפול"
-                  : "הדיווחים שלי"}
-              </h2>
-            </div>
+      <div className={`mr-layout ${isCoordinatorView ? "mr-layout-full" : ""}`}>
+        <section className="mr-panel">
+          <div className="mr-panel-heading">
+            <h2>
+              {isCoordinatorView ? "דיווחים לטיפול" : "הדיווחים שלי"}
+            </h2>
 
             {!isCoordinatorView && !showForm && (
               <button
-                className="new-report-button"
+                type="button"
+                className="hp-btn hp-btn-mint hp-btn-sm"
                 onClick={handleNewReport}
               >
-                <span>＋</span>
-                דיווח על פגישה חדשה
+                ＋ דיווח על פגישה חדשה
               </button>
             )}
           </div>
@@ -274,26 +274,12 @@ function MeetingReportsPage({ initialShowForm = false }) {
         </section>
 
         {!isCoordinatorView && (
-          <aside className="side-panel">
+          <aside className="mr-side">
             <PaymentSummary lecturerPayment={lecturerPayment} />
           </aside>
         )}
       </div>
-
-      <footer className="welcome-banner">
-        <span className="welcome-symbol">♡</span>
-
-        <div>
-          <strong>ברוכים הבאים למערכת!</strong>
-          <p>
-            כאן תוכלו לדווח על פגישות, לעקוב אחר סטטוס הדיווחים
-            ולצפות בסיכום התשלומים.
-          </p>
-        </div>
-
-        <span className="welcome-decoration">✧</span>
-      </footer>
-    </main>
+    </PageShell>
   );
 }
 

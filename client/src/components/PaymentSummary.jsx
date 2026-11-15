@@ -1,7 +1,11 @@
-
 function PaymentSummary({ lecturerPayment }) {
   if (!lecturerPayment) {
-    return <p>טוענת נתוני תשלום...</p>;
+    return (
+      <div className="payment-summary ps-summary">
+        <h2>סיכום תשלומים</h2>
+        <p className="ps-summary-loading">טוענת נתוני תשלום...</p>
+      </div>
+    );
   }
 
   const facilitatorLevelText =
@@ -12,32 +16,38 @@ function PaymentSummary({ lecturerPayment }) {
       : "לא הוגדר";
 
   return (
-    <div className="payment-summary">
+    <div className="payment-summary ps-summary">
       <h2>סיכום תשלומים</h2>
 
-      <p>
-        <strong>סוג מנחה:</strong>{" "}
-        {facilitatorLevelText}
-      </p>
+      <dl className="ps-summary-list">
+        <div>
+          <dt>סוג מנחה</dt>
+          <dd>{facilitatorLevelText}</dd>
+        </div>
 
-      <p>
-        <strong>מספר פגישות שאושרו:</strong>{" "}
-        {lecturerPayment.approvedMeetingsCount}
-      </p>
+        <div>
+          <dt>פגישות שאושרו</dt>
+          <dd>{lecturerPayment.approvedMeetingsCount}</dd>
+        </div>
 
-      <p>
-        <strong>תשלום עבור כל פגישה:</strong>{" "}
-        {lecturerPayment.paymentPerMeeting !== null
-          ? `${lecturerPayment.paymentPerMeeting} ₪`
-          : "לא הוגדר תעריף"}
-      </p>
+        <div>
+          <dt>תשלום לפגישה</dt>
+          <dd>
+            {lecturerPayment.paymentPerMeeting !== null
+              ? `${Number(lecturerPayment.paymentPerMeeting).toLocaleString("he-IL")} ₪`
+              : "לא הוגדר תעריף"}
+          </dd>
+        </div>
+      </dl>
 
-      <h3>
-        סה״כ לתשלום:{" "}
-        {lecturerPayment.totalPayment !== null
-          ? `${lecturerPayment.totalPayment} ₪`
-          : "לא ניתן לחשב"}
-      </h3>
+      <div className="ps-summary-total">
+        <span>סה״כ לתשלום</span>
+        <strong>
+          {lecturerPayment.totalPayment !== null
+            ? `${Number(lecturerPayment.totalPayment).toLocaleString("he-IL")} ₪`
+            : "לא ניתן לחשב"}
+        </strong>
+      </div>
     </div>
   );
 }

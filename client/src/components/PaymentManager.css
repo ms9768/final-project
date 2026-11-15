@@ -1,0 +1,221 @@
+/* =========================================================
+   מנהלת תשלומים (pm)
+   ========================================================= */
+
+.pm-filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.pm-filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pm-clear {
+  border: 0;
+  background: none;
+  color: var(--hp-purple-700);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--hp-yellow);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.pm-excel {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pm-filters-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(4, 1fr);
+  gap: 14px;
+}
+
+.pm .adm-field select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--hp-purple-100);
+  color: var(--hp-text);
+  font: inherit;
+}
+
+.pm .adm-field select:focus {
+  outline: none;
+  border-color: var(--hp-mint-500);
+  background: var(--hp-white);
+}
+
+/* ---------- טבלה ---------- */
+
+.pm-table-card {
+  padding: 18px;
+}
+
+.pm-table-wrapper {
+  overflow-x: auto;
+}
+
+.pm-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+
+.pm-table th {
+  background: var(--hp-purple-100);
+  color: var(--hp-purple-900);
+  font-weight: 700;
+  text-align: right;
+  padding: 12px;
+  white-space: nowrap;
+}
+
+.pm-table th:first-child { border-radius: 0 14px 14px 0; }
+.pm-table th:last-child { border-radius: 14px 0 0 14px; }
+
+.pm-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--hp-purple-100);
+  vertical-align: middle;
+}
+
+.pm-table tbody tr:hover {
+  background: #fbf8fe;
+}
+
+.pm-table tr.is-paid td {
+  color: #8a7d99;
+}
+
+.pm-person {
+  display: flex;
+  flex-direction: column;
+}
+
+.pm-person strong {
+  color: var(--hp-purple-900);
+}
+
+.pm-person small {
+  color: #9d90ad;
+}
+
+.pm-amount {
+  font-weight: 800;
+  color: var(--hp-purple-900);
+  white-space: nowrap;
+}
+
+.pm-tag-unpaid {
+  background: #fff4d1;
+  color: #8a6200;
+}
+
+.pm-mark {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 16px;
+  background: var(--hp-purple-900);
+  color: var(--hp-white);
+  font-weight: 700;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.pm-mark:hover {
+  background: var(--hp-purple-700);
+}
+
+.pm-mark:disabled {
+  opacity: 0.6;
+}
+
+.pm-paid {
+  color: #3a9e8d;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pm-note {
+  text-align: center;
+  color: #8a7d99;
+  font-size: 0.9rem;
+}
+
+/* ---------- רספונסיביות ---------- */
+
+@media (max-width: 1000px) {
+  .pm-filters-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pm-field-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .pm-filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pm-table thead {
+    display: none;
+  }
+
+  .pm-table,
+  .pm-table tbody,
+  .pm-table tr,
+  .pm-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .pm-table tr {
+    background: #fbf8fe;
+    border-radius: var(--hp-radius-md);
+    padding: 10px 14px;
+    margin-bottom: 12px;
+  }
+
+  .pm-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--hp-purple-200);
+  }
+
+  .pm-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .pm-table td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--hp-purple-700);
+    font-size: 0.85rem;
+  }
+
+  .pm-action-cell .pm-mark {
+    width: 100%;
+  }
+}

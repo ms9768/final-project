@@ -205,10 +205,36 @@ router.get("/:id", authenticateToken, async (req, res) => {
 
 
 
-// קבלת כל מערכי השיעור למסך הניהול
-router.get("/admin/all", async (req, res) => {
+// מסנן חיפוש ומסלול - משותף למסך הניהול ולמסך המנחה
+function escapeRegex(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildLessonFilter(query) {
+    const filter = {};
+    const search = query.search?.trim();
+    const track = query.track?.trim();
+
+    if (search) {
+        const searchRegex = new RegExp(escapeRegex(search), "i");
+        filter.$or = [
+            { title: searchRegex },
+            { description: searchRegex }
+        ];
+    }
+
+    // התאמה לפי מילת המסלול, כך ש"ארוך" ימצא גם "ארוך" וגם "מסלול ארוך"
+    if (track) {
+        filter.track = new RegExp(escapeRegex(track), "i");
+    }
+
+    return filter;
+}
+
+// קבלת כל מערכי השיעור למסך הניהול (רכזת בלבד), כולל חיפוש וסינון
+router.get("/admin/all", authenticateToken, requireCoordinator, async (req, res) => {
     try {
-        const lessons = await Lesson.find()
+        const lessons = await Lesson.find(buildLessonFilter(req.query))
             .sort({ createdAt: -1 });
 
         res.status(200).json(lessons);
@@ -224,26 +250,12 @@ router.get("/admin/all", async (req, res) => {
 // קבלת מערכי השיעור הפתוחים למשתמש המחובר
 router.get("/", authenticateToken, async (req, res) => {
     try {
-        const search = req.query.search?.trim();
-        const track = req.query.track?.trim();
-
-        const filter = {};
+        const filter = buildLessonFilter(req.query);
 
         // מנחה רואה רק מערכים גלויים שפתוחים עבורה
         if (req.user.role === "facilitator") {
             filter.isVisible = true;
             filter.allowedUsers = req.user.userId;
-        }
-
-        if (search) {
-            filter.$or = [
-                { title: { $regex: search, $options: "i" } },
-                { description: { $regex: search, $options: "i" } }
-            ];
-        }
-
-        if (track) {
-            filter.track = track;
         }
 
         const lessons = await Lesson.find(filter)

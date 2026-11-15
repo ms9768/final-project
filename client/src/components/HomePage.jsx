@@ -6,349 +6,313 @@ import beitShemesh from '../assets/cities/beit-shemesh.jpg'
 import modiin from '../assets/cities/rechovot.jpg'
 import bneiBrak from '../assets/cities/bnei-brak.jpg'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef } from 'react'
+import './HomePage.css'
+import {
+    Spark,
+    ArrowIcon,
+    BookIcon,
+    CalendarIcon,
+    SunIcon,
+    PinIcon,
+    UserIcon,
+    Leaf,
+    Envelope,
+} from './ui/Decor'
 
 function HomePage({ onShowLessons, onShowContact, onShowLogin }) {
     const citiesTrackRef = useRef(null)
-    const locationIconRef = useRef(null)
-    const [locationIconVisible, setLocationIconVisible] = useState(false)
-
-    useEffect(() => {
-        const element = locationIconRef.current
-        if (!element) return
-
-        const observer = new IntersectionObserver(
-            ([entry]) => setLocationIconVisible(entry.isIntersecting),
-            { threshold: 0.3 }
-        )
-
-        observer.observe(element)
-        return () => observer.disconnect()
-    }, [])
 
     const tracks = [
         {
             title: 'המסלול הארוך',
             description: 'מאגר שיעורים וחומרי למידה לתהליך לימודי מתמשך.',
-            icon: '📚',
-            className: 'track-long',
+            Icon: BookIcon,
+            className: 'hp-track-long',
         },
         {
             title: 'המסלול הקצר',
             description: 'חומרי למידה ממוקדים לפעילויות קצרות ומעשיות.',
-            icon: '📝',
-            className: 'track-short',
+            Icon: CalendarIcon,
+            className: 'hp-track-short',
         },
         {
-            title: 'מסלול הקיץ',
+            title: 'מסלול קיץ',
             description: 'רעיונות, פעילויות וחומרי הוראה לתקופת הקיץ.',
-            icon: '☀️',
-            className: 'track-summer',
+            Icon: SunIcon,
+            className: 'hp-track-summer',
         },
     ]
 
     const cities = [
-        {
-            name: 'ירושלים',
-            description: 'פעילויות למידה, שיתוף ורעיונות חדשים.',
-            image: jerusalem,
-        },
-        {
-            name: 'בית שמש',
-            description: 'למידה, שיתוף ורעיונות חדשים בבית שמש.',
-            image: beitShemesh,
-        },
-        {
-            name: 'מודיעין',
-            description: 'פעילות חינוכית ויצירה משותפת במודיעין.',
-            image: modiin,
-        },
-        {
-            name: 'בני ברק',
-            description: 'למידה משותפת והעשרת הידע בבני ברק.',
-            image: bneiBrak,
-        },
+        { name: 'ירושלים', image: jerusalem },
+        { name: 'בית שמש', image: beitShemesh },
+        { name: 'מודיעין', image: modiin },
+        { name: 'בני ברק', image: bneiBrak },
     ]
 
     const testimonials = [
         {
             text: 'המערכת עוזרת לי למצוא חומרי הוראה ולארגן את השיעורים במקום אחד.',
-            initial: 'מ',
-            role: 'מורה בתוכנית',
+            name: 'מורה בתוכנית',
         },
         {
             text: 'שיתוף הרעיונות והתגובות מאפשר לנו ללמוד מהניסיון של עמיתים.',
-            initial: 'ר',
-            role: 'רכזת התוכנית',
+            name: 'רכזת התוכנית',
         },
         {
             text: 'קל יותר לאתר קבצים, לעיין בתכנים ולהיעזר בחומרים שכבר הוכנו.',
-            initial: 'ת',
-            role: 'משתתף בתוכנית',
+            name: 'משתתף בתוכנית',
         },
     ]
 
-    return (
-        <section className="home-page" dir="rtl">
+    const navLinks = [
+        { href: '#home', label: 'דף הבית' },
+        { href: '#about', label: 'אודות התוכנית' },
+        { href: '#tracks', label: 'מסלולים' },
+        { href: '#cities', label: 'היכן אנחנו פועלות?' },
+        { href: '#testimonials', label: 'המלצות' },
+        { href: '#contact', label: 'יצירת קשר' },
+    ]
 
-            <header className="site-header">
-                <a href="#home" className="site-logo-link">
-                    <img src={logo} alt="לוגו התוכנית" className="site-logo" />
+    function scrollCities(direction) {
+        const track = citiesTrackRef.current
+        if (!track) return
+        // ב-RTL "הבא" זז שמאלה
+        track.scrollBy({ left: direction * track.clientWidth * 0.8, behavior: 'smooth' })
+    }
+
+    return (
+        <section className="home-page hp" dir="rtl">
+
+            {/* ---------- תפריט עליון ---------- */}
+            <header className="hp-header">
+                <a href="#home" className="hp-logo-link">
+                    <img src={logo} alt="מבט לגובה" className="hp-logo" />
                 </a>
 
-                <nav className="site-navigation">
-                    <a href="#home">דף הבית</a>
-                    <a href="#about">אודות התוכנית</a>
-                    <a href="#tracks">מסלולים</a>
-                    <a href="#cities">היכן אנחנו פועלות?</a>
-                    <a href="#testimonials">המלצות</a>
-                    <a href="#contact">יצירת קשר</a>
+                <nav className="hp-nav" aria-label="ניווט ראשי">
+                    {navLinks.map((link, index) => (
+                        <a
+                            key={link.href}
+                            href={link.href}
+                            className={index === 0 ? 'is-active' : ''}
+                        >
+                            {link.label}
+                        </a>
+                    ))}
                 </nav>
 
-                <button
-                    type="button"
-                    className="header-login-button"
-                    onClick={onShowLogin}
-                >
+                <button type="button" className="hp-login" onClick={onShowLogin}>
+                    <UserIcon />
                     כניסה למערכת
-                    <span>♙</span>
                 </button>
             </header>
 
-            <section className="home-hero" id="home">
-                <div className="home-hero-content">
-                    <h1>
-                        מערך תוכן
-                        <span className="hero-title-underline"></span>
-                    </h1>
+            {/* ---------- Hero ---------- */}
+            <section className="hp-hero" id="home">
+                <div className="hp-hero-inner">
+                    <div className="hp-hero-text">
+                        <h1>
+                            מבט לגובה
+                            <svg className="hp-underline" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true">
+                                <path d="M4 14C80 4 200 2 296 10" />
+                            </svg>
+                        </h1>
 
-                    <p>
-                        מאגר מערכים, כלים ורעיונות
-                        <br />
-                        להובלת קבוצות משמעותיות
-                    </p>
+                        <p>
+                            תכנית שקיימת בתוך המערכת הלימודית -
+                            <br />
+                            בבתי  ספר לכיתות ח'
+                            <br />
+                            התוכנית מכירה לבנות את מאפיניי גיל ההתבגרות
+                            <br />
+                            ממשק עם הנושאים, מנחה חיצונית
+                            <br />
+                            קבוצות קטנות שמאפשרות שיח בונה
+                            <br />
+                            עוד מבוגר משמעותי בחיים מעבר למעגלי ההורים והממסד
 
-                    <button
-                        type="button"
-                        className="home-primary-button"
-                        onClick={onShowLessons}
-                    >
-                        מעבר למאגר השיעורים
-                        <span>←</span>
-                    </button>
+                        </p>
+
+                        <a
+                            href="#about"
+                            className="hp-btn hp-btn-mint"
+                            onClick={(event) => {
+                                event.preventDefault()
+                                document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
+                            }}
+                        >
+                            עוד על התוכנית
+                            <ArrowIcon />
+                        </a>
+                    </div>
+
+                    <div className="hp-hero-figure">
+                        <Spark className="hp-hero-spark" />
+                        <img src={character} alt="" className="hp-character" />
+                    </div>
                 </div>
 
-                <div className="home-hero-decoration">
-                    <img
-                        src={character}
-                        alt="הדמות המאוירת של התוכנית"
-                        className="home-character"
-                    />
-                </div>
+                <svg className="hp-drops" viewBox="0 0 60 60" aria-hidden="true">
+                    <path d="M20 8c6 10 8 20 2 26-6-2-8-12-2-26z" />
+                    <path d="M42 18c3 8 3 15-2 19-4-3-4-10 2-19z" />
+                    <path d="M12 38c4 5 5 10 1 13-3-2-4-7-1-13z" />
+                </svg>
 
-                <span className="hero-decoration hero-decoration-one">✦</span>
-                <span className="hero-decoration hero-decoration-two">✦</span>
+                {/* גל תחתון */}
+                <svg className="hp-hero-wave" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true">
+                    <path className="hp-wave-shadow" d="M0 80C260 140 520 30 820 60s420 70 620 10V140H0z" />
+                    <path d="M0 100C280 150 560 40 860 75s400 55 580 5V140H0z" />
+                </svg>
             </section>
 
-            <section className="home-about" id="about">
-                <div className="about-image-area">
-                    <div className="about-booklet">
-                        <img src={character} alt="הדמות המאוירת של התוכנית" />
-                        <span>מערך תוכן</span>
-                    </div>
-                    <span className="about-spark">✦</span>
-                </div>
+            {/* ---------- על התוכנית ---------- */}
+            <section className="hp-about hp-section" id="about">
+                <Leaf />
 
-                <div className="about-content">
-                    <span className="home-eyebrow">נעים להכיר</span>
-
-                    <h2>
-                        על התוכנית <span>✦</span>
+                <div className="hp-about-text">
+                    <h2 className="hp-title">
+                        על התוכנית <Spark />
                     </h2>
-
                     <p>
                         תוכנית הכשרה והעצמה למדריכות ורכזות,
-                        המספקת מערכי שיעור איכותיים, ליווי מקצועי
-                        וכלים פרקטיים להובלת קבוצות חינוכיות משמעותיות.
+                        המספקת מערכי שיעור איכותיים, ליווי מקצועי וכלים
+                        פרקטיים להובלת קבוצות חינוכיות משמעותיות.
                     </p>
-
-                    <a href="#tracks" className="outline-button">
-                        קראו עוד ←
+                    <a href="#tracks" className="hp-btn hp-btn-outline">
+                        קראו עוד
+                        <ArrowIcon />
                     </a>
                 </div>
 
-                <div className="about-leaf" aria-hidden="true">
-                    <span>❋</span>
-                    <span>♧</span>
+                <div className="hp-booklets" aria-hidden="true">
+                    <Spark className="hp-booklets-spark" />
+                    {[0, 1, 2].map((i) => (
+                        <div className="hp-booklet" key={i} style={{ '--i': i }}>
+                            {i === 2 && (
+                                <>
+                                    <span className="hp-booklet-title">מערך<br />תוכן</span>
+                                    <img src={character} alt="" />
+                                    <img src={logo} alt="" className="hp-booklet-logo" />
+                                </>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            <section className="home-tracks" id="tracks">
-                <div className="home-section-heading">
-                    <h2>
-                        מסלולי התוכנית <span>✦</span>
-                    </h2>
-                </div>
+            {/* ---------- מסלולים ---------- */}
+            <section className="hp-tracks hp-section" id="tracks">
+                <h2 className="hp-title hp-title-center">
+                    מסלולי התוכנית <Spark />
+                </h2>
 
-                <div className="home-tracks-grid">
-                    {tracks.map((track) => (
-                        <article
-                            className={`home-track-card ${track.className}`}
-                            key={track.title}
-                        >
-                            <div className="home-track-icon" aria-hidden="true">
-                                {track.icon}
-                            </div>
-
-                            <h3>{track.title}</h3>
-                            <p>{track.description}</p>
-
-                            <button
-                                type="button"
-                                className="home-track-button"
-                                onClick={onShowLessons}
-                            >
-                                למאגר השיעורים ←
-                            </button>
+                <div className="hp-tracks-grid">
+                    <Spark className="hp-tracks-spark-a" />
+                    <Spark className="hp-tracks-spark-b" />
+                    {tracks.map(({ title, description, Icon, className }) => (
+                        <article className={`hp-track ${className}`} key={title}>
+                            <div className="hp-track-icon"><Icon /></div>
+                            <h3>{title}</h3>
+                            <p>{description}</p>
                         </article>
                     ))}
                 </div>
             </section>
 
-            <section className="home-cities" id="cities">
-                <div className="home-section-heading">
-                    <h2>היכן אנחנו פועלות?</h2>
-                    <p>התוכנית מתקיימת במגוון ערים ברחבי הארץ.</p>
+            {/* ---------- ערים ---------- */}
+            <section className="hp-cities hp-section" id="cities">
+                <h2 className="hp-title hp-title-center">
+                    <span className="hp-title-pin"><PinIcon /></span>
+                    היכן אנחנו פועלים?
+                    <Spark />
+                </h2>
+                <p className="hp-subtitle">התוכנית מתקיימת במגוון ערים ברחבי הארץ.</p>
 
-                    <svg
-                        ref={locationIconRef}
-                        className={`cities-location-icon ${locationIconVisible ? 'is-visible' : ''}`}
-                        viewBox="0 0 50 50"
-                        width="45"
-                        height="45"
-                        aria-hidden="true"
-                    >
-                        <path
-                            d="M25 45s17-16 17-27a17 17 0 1 0-34 0c0 11 17 27 17 27z"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                        />
-                        <circle cx="25" cy="18" r="6" fill="currentColor" />
-                    </svg>
-                </div>
-
-                <div className="home-cities-carousel">
-                    <button
-                        type="button"
-                        className="cities-arrow"
-                        aria-label="הערים הקודמות"
-                        onClick={() => {
-                            citiesTrackRef.current?.scrollBy({
-                                left: -citiesTrackRef.current.clientWidth,
-                                behavior: 'smooth',
-                            })
-                        }}
-                    >
-                        ‹
-                    </button>
-
-                    <div
-                        className="home-cities-viewport"
-                        ref={citiesTrackRef}
-                    >
-                        <div className="home-cities-grid">
-                            {cities.map((city) => (
-                                <article className="home-city-card" key={city.name}>
-                                    <img
-                                        src={city.image}
-                                        alt={`נוף העיר ${city.name}`}
-                                    />
-
-                                    <div className="home-city-content">
-                                        <h3>{city.name}</h3>
-                                        <p>{city.description}</p>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        className="cities-arrow"
-                        aria-label="הערים הבאות"
-                        onClick={() => {
-                            citiesTrackRef.current?.scrollBy({
-                                left: citiesTrackRef.current.clientWidth,
-                                behavior: 'smooth',
-                            })
-                        }}
-                    >
+                <div className="hp-carousel">
+                    <button type="button" className="hp-carousel-arrow" aria-label="הערים הקודמות" onClick={() => scrollCities(1)}>
                         ›
                     </button>
-                </div>
-            </section>
 
-            <section className="home-testimonials" id="testimonials">
-                <div className="home-section-heading">
-                    <h2>
-                        מה מספרות המדריכות? <span>✦</span>
-                    </h2>
-                </div>
+                    <div className="hp-carousel-viewport" ref={citiesTrackRef}>
+                        {cities.map((city) => (
+                            <article className="hp-city" key={city.name}>
+                                <img src={city.image} alt={`נוף העיר ${city.name}`} />
+                                <span className="hp-city-label">
+                                    <PinIcon />
+                                    {city.name}
+                                </span>
+                            </article>
+                        ))}
+                    </div>
 
-                <div className="home-testimonials-grid">
-                    {testimonials.map((testimonial, index) => (
-                        <article className="home-testimonial-card" key={index}>
-                            <div className="home-quote-mark">”</div>
-                            <p>{testimonial.text}</p>
-
-                            <div className="home-testimonial-author">
-                                <div className="home-testimonial-avatar">
-                                    {testimonial.initial}
-                                </div>
-                                <h3>{testimonial.role}</h3>
-                            </div>
-                        </article>
-                    ))}
-                </div>
-            </section>
-
-            <section className="home-contact-banner" id="contact">
-                <div className="contact-illustration" aria-hidden="true">
-                    ✉
-                </div>
-
-                <div className="contact-banner-content">
-                    <h2>רוצות לשמוע עוד?</h2>
-                    <p>
-                        נשמח להיות בקשר, לענות על שאלות ולספק מידע נוסף.
-                    </p>
-
-                    <button
-                        type="button"
-                        className="home-primary-button"
-                        onClick={onShowContact}
-                    >
-                        יצירת קשר ←
+                    <button type="button" className="hp-carousel-arrow" aria-label="הערים הבאות" onClick={() => scrollCities(-1)}>
+                        ‹
                     </button>
                 </div>
             </section>
 
-            <footer className="home-footer">
-                <img src={logo} alt="לוגו התוכנית" />
+            {/* ---------- המלצות ---------- */}
+            <section className="hp-testimonials" id="testimonials">
+                <svg className="hp-band-wave hp-band-wave-top" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M0 80V40C300 0 600 10 900 35s400 20 540-5V80z" />
+                </svg>
 
-                <nav>
-                    <a href="#home">דף הבית</a>
-                    <a href="#about">אודות התוכנית</a>
-                    <a href="#tracks">מסלולים</a>
-                    <a href="#testimonials">המלצות</a>
-                    <a href="#contact">יצירת קשר</a>
+                <div className="hp-testimonials-inner hp-section">
+                    <h2 className="hp-title hp-title-center">
+                        מה מספרות המדריכות? <Spark />
+                    </h2>
+
+                    <div className="hp-testimonials-grid">
+                        {testimonials.map((t) => (
+                            <article className="hp-quote" key={t.name}>
+                                <span className="hp-quote-mark" aria-hidden="true">”</span>
+                                <p>{t.text}</p>
+                                <div className="hp-quote-author">
+                                    <span className="hp-avatar"><UserIcon /></span>
+                                    {t.name}
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                </div>
+
+                <svg className="hp-band-wave hp-band-wave-bottom" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M0 0V40C260 80 620 60 940 40s380-20 500 5V0z" />
+                </svg>
+            </section>
+
+            {/* ---------- יצירת קשר ---------- */}
+            <section className="hp-section" id="contact">
+                <div className="hp-contact">
+                    <div className="hp-contact-text">
+                        <h2>רוצות לשמוע עוד?</h2>
+                        <p>נשמח להיות בקשר, לענות על שאלות ולספק מידע נוסף.</p>
+                        <button type="button" className="hp-btn hp-btn-mint" onClick={onShowContact}>
+                            יצירת קשר
+                            <ArrowIcon />
+                        </button>
+                    </div>
+                    <div className="hp-contact-art">
+                        <Spark className="hp-contact-spark" />
+                        <Envelope />
+                    </div>
+                </div>
+            </section>
+
+            {/* ---------- פוטר ---------- */}
+            <footer className="hp-footer">
+                <img src={logo} alt="מבט לגובה" className="hp-footer-logo" />
+
+                <nav className="hp-footer-nav" aria-label="ניווט תחתון">
+                    {navLinks.map((link) => (
+                        <a key={link.href} href={link.href}>{link.label}</a>
+                    ))}
                 </nav>
 
-                <span>© כל הזכויות שמורות</span>
+                <span className="hp-copyright">© כל הזכויות שמורות</span>
             </footer>
-
         </section>
     )
 }

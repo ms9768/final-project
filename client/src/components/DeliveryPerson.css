@@ -1,0 +1,172 @@
+/* =========================================================
+   עמוד המשלוחן (dp) - נבנה קודם כול לטלפון
+   ========================================================= */
+
+.dp-card {
+  width: min(520px, 100%);
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: 0 24px 60px rgba(40, 10, 60, 0.25);
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dp-head {
+  text-align: center;
+}
+
+.dp-eyebrow {
+  font-size: 0.9rem;
+  color: #7c6f8c;
+}
+
+.dp-head h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.dp-quick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dp-quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  border-radius: var(--hp-radius-md);
+  background: var(--hp-mint-100);
+  color: var(--hp-purple-900);
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.dp-quick-btn:hover {
+  background: var(--hp-mint-300);
+  transform: translateY(-2px);
+}
+
+.dp-quick-btn svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: var(--hp-purple-900);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dp-quick-btn span {
+  font-weight: 800;
+}
+
+.dp-quick-btn small {
+  color: #5d7f78;
+  font-size: 0.8rem;
+}
+
+.dp-notes dd {
+  font-weight: 700;
+}
+
+.dp-action {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 2px dashed var(--hp-purple-100);
+}
+
+.dp-action h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.dp-big-btn {
+  justify-content: center;
+  padding-block: 16px;
+  font-size: 1.1rem;
+}
+
+/* אזור העלאת תמונה גדול ונוח ללחיצה */
+.dp-upload {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 26px 16px;
+  border-radius: var(--hp-radius-md);
+  border: 3px dashed var(--hp-purple-200);
+  background: var(--hp-purple-100);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.dp-upload:hover {
+  border-color: var(--hp-purple-500);
+}
+
+.dp-upload.has-file {
+  border-color: var(--hp-mint-500);
+  background: var(--hp-mint-100);
+}
+
+.dp-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dp-upload:has(input:focus-visible) {
+  outline: 3px solid var(--hp-yellow);
+  outline-offset: 3px;
+}
+
+.dp-upload svg {
+  width: 44px;
+  height: 44px;
+  fill: none;
+  stroke: var(--hp-purple-700);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.dp-upload strong {
+  color: var(--hp-purple-900);
+  font-size: 1.05rem;
+}
+
+.dp-upload span {
+  color: #7c6f8c;
+  font-size: 0.88rem;
+  word-break: break-all;
+}
+
+.dp-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--hp-radius-md);
+  background: var(--hp-mint-100);
+  color: #1f6b5d;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.dp-done img {
+  height: 130px;
+  animation: hp-float 5s ease-in-out infinite;
+}

@@ -1,0 +1,691 @@
+/* =========================================================
+   דיווחי פגישות (mr) + טופס דיווח (rf) + סיכום תשלומים
+   כל הכללים מתחילים ב-.mr כדי לגבור על MeetingReports.css הישן
+   ========================================================= */
+
+.mr .ps-body {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ---------- כרטיסי מספרים ---------- */
+
+.mr-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.mr-stat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: 0 18px 50px rgba(74, 31, 110, 0.14);
+  padding: 20px 22px;
+}
+
+.mr-stat-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: var(--stat-bg);
+  flex-shrink: 0;
+  transform: rotate(-6deg);
+}
+
+.mr-stat-purple { --stat-bg: var(--hp-purple-200); }
+.mr-stat-yellow { --stat-bg: #ffe7a3; }
+.mr-stat-mint { --stat-bg: var(--hp-mint-300); }
+
+.mr-stat strong {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+  line-height: 1.1;
+}
+
+.mr-stat span {
+  color: var(--hp-text);
+  font-size: 0.95rem;
+}
+
+/* ---------- פריסה ---------- */
+
+.mr-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+/* אצל המנחה: סיכום התשלומים כפס רחב מעל הטבלה */
+.mr-side {
+  order: -1;
+}
+
+@media (min-width: 761px) {
+  .mr .mr-side .ps-summary {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 28px;
+    padding: 20px 26px;
+  }
+
+  .mr .mr-side .ps-summary h2 {
+    margin: 0;
+  }
+
+  .mr-side .ps-summary-list {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .mr-side .ps-summary-list div {
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 22px;
+    border-bottom: 0;
+    border-inline-start: 1px dashed var(--hp-mint-500);
+  }
+
+  .mr-side .ps-summary-list div:first-child {
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+
+  .mr-side .ps-summary-total {
+    margin: 0;
+    padding: 10px 26px;
+  }
+}
+
+.mr-layout-full {
+  grid-template-columns: 1fr;
+}
+
+.mr-panel {
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: var(--hp-shadow);
+  padding: 24px;
+  min-width: 0;
+}
+
+.mr-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.mr-panel-heading h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+/* ---------- טבלת דיווחים ---------- */
+
+.mr .table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--hp-radius-md);
+  border: 0;
+  box-shadow: none;
+}
+
+.mr .reports-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+
+.mr .reports-table th {
+  background: var(--hp-purple-100);
+  color: var(--hp-purple-900);
+  font-weight: 700;
+  text-align: right;
+  padding: 12px 14px;
+  white-space: nowrap;
+  border: 0;
+}
+
+.mr .reports-table th:first-child {
+  border-radius: 0 14px 14px 0;
+}
+
+.mr .reports-table th:last-child {
+  border-radius: 14px 0 0 14px;
+}
+
+.mr .reports-table td {
+  padding: 14px;
+  border: 0;
+  border-bottom: 1px solid var(--hp-purple-100);
+  vertical-align: middle;
+  color: var(--hp-text);
+  background: none;
+}
+
+.mr .reports-table tbody tr {
+  transition: background 0.2s;
+}
+
+.mr .reports-table tbody tr:hover {
+  background: #fbf8fe;
+}
+
+.mr .topic-cell {
+  font-weight: 700;
+  color: var(--hp-purple-900);
+}
+
+.mr .facilitator-email {
+  color: #8a7d99;
+}
+
+.mr .no-receipt,
+.mr .no-action {
+  color: #a79bb6;
+  font-size: 0.9rem;
+}
+
+/* תגיות סטטוס */
+.mr .status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  border: 0;
+}
+
+.mr .status-badge.pending { background: #fff4d1; color: #8a6200; }
+.mr .status-badge.approved { background: var(--hp-mint-100); color: #1f6b5d; }
+.mr .status-badge.rejected { background: #fdeaea; color: #a12f3a; }
+.mr .status-badge.needs_correction { background: var(--hp-purple-100); color: var(--hp-purple-700); }
+
+/* כפתורים בטבלה */
+.mr .reports-table .topic-cell,
+.mr .reports-table .coordinator-notes-cell {
+  min-width: 120px;
+}
+
+.mr .reports-table th,
+.mr .reports-table td {
+  padding-inline: 10px;
+}
+
+.mr .actions-cell > * {
+  margin: 3px 0 3px 6px;
+}
+
+.mr .actions-cell .coordinator-actions {
+  display: inline-flex;
+  width: auto;
+  vertical-align: top;
+}
+
+.mr .table-action-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: var(--hp-purple-100);
+  color: var(--hp-purple-900);
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.mr .table-action-button:hover {
+  background: var(--hp-purple-200);
+}
+
+.mr .coordinator-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.mr .coordinator-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mr .coordinator-buttons button,
+.mr .send-correction-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: filter 0.2s;
+}
+
+.mr .coordinator-buttons button:hover,
+.mr .send-correction-button:hover {
+  filter: brightness(0.95);
+}
+
+.mr .approve-button { background: var(--hp-mint-300); color: var(--hp-purple-900); }
+.mr .reject-button { background: #fdeaea; color: #a12f3a; }
+.mr .correction-button { background: #fff4d1; color: #8a6200; }
+
+.mr .coordinator-notes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mr .coordinator-notes-form textarea {
+  width: 100%;
+  min-width: 220px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--hp-purple-200);
+  font: inherit;
+  resize: vertical;
+}
+
+.mr .send-correction-button {
+  align-self: flex-start;
+  background: var(--hp-purple-900);
+  color: var(--hp-white);
+}
+
+.mr .table-message {
+  text-align: center;
+  padding: 26px 0;
+  color: #7c6f8c;
+  font-weight: 500;
+}
+
+/* ---------- חלון היסטוריה ---------- */
+
+.mr .history-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(40, 15, 60, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.mr .history-modal {
+  width: min(520px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  padding: 26px;
+  box-shadow: 0 30px 70px rgba(40, 15, 60, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mr .history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mr .history-header h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.mr .history-x {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--hp-purple-100);
+  color: var(--hp-purple-900);
+  font-size: 1rem;
+}
+
+.mr .history-item {
+  position: relative;
+  padding: 12px 16px;
+  border-radius: var(--hp-radius-md);
+  background: var(--hp-purple-100);
+  border-inline-start: 4px solid var(--hp-purple-500);
+}
+
+.mr .history-item strong {
+  color: var(--hp-purple-900);
+}
+
+.mr .history-item p {
+  margin-top: 2px;
+  font-size: 0.92rem;
+}
+
+.mr .history-close-button {
+  align-self: flex-start;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 24px;
+  background: var(--hp-purple-900);
+  color: var(--hp-white);
+  font-weight: 700;
+}
+
+/* ---------- סיכום תשלומים (צד) ---------- */
+
+.mr .ps-summary {
+  background: var(--hp-mint-100);
+  border-radius: var(--hp-radius-lg);
+  padding: 24px;
+  border: 0;
+  box-shadow: none;
+}
+
+.mr .ps-summary h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+  margin-bottom: 14px;
+}
+
+.ps-summary-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ps-summary-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--hp-mint-500);
+}
+
+.ps-summary-list dt {
+  color: var(--hp-text);
+}
+
+.ps-summary-list dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--hp-purple-900);
+}
+
+.ps-summary-total {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--hp-radius-md);
+  background: var(--hp-white);
+  text-align: center;
+}
+
+.ps-summary-total span {
+  display: block;
+  color: var(--hp-text);
+  font-size: 0.95rem;
+}
+
+.ps-summary-total strong {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.ps-summary-loading {
+  color: #7c6f8c;
+}
+
+/* =========================================================
+   טופס דיווח
+   ========================================================= */
+
+.mr .rf {
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  border: 2px dashed var(--hp-purple-200);
+  box-shadow: none;
+  padding: 26px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: none;
+  margin: 0;
+}
+
+.mr .rf h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+  margin: 0;
+}
+
+.rf-group {
+  border: 0;
+  margin: 0;
+  padding: 18px;
+  border-radius: var(--hp-radius-md);
+  background: var(--hp-purple-100);
+}
+
+.rf-group legend {
+  float: right;
+  width: 100%;
+  font-weight: 800;
+  color: var(--hp-purple-700);
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.rf-grid {
+  clear: both;
+  display: grid;
+  gap: 14px;
+}
+
+.rf-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rf-span-2 {
+  grid-column: span 2;
+}
+
+.mr .rf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--hp-purple-900);
+}
+
+.rf-field em {
+  font-style: normal;
+  font-weight: 400;
+  color: #8a7d99;
+}
+
+.mr .rf-field input,
+.mr .rf-field select {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: var(--hp-white);
+  color: var(--hp-text);
+  font: inherit;
+  font-weight: 400;
+  margin: 0;
+}
+
+.mr .rf-field input:focus,
+.mr .rf-field select:focus {
+  outline: none;
+  border-color: var(--hp-mint-500);
+  box-shadow: 0 0 0 4px var(--hp-mint-100);
+}
+
+.mr .rf-field select:disabled {
+  opacity: 0.55;
+}
+
+.mr .rf-file input {
+  padding: 8px;
+  border: 2px dashed var(--hp-purple-200);
+}
+
+.mr .rf-file input::file-selector-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-inline-end: 10px;
+  background: var(--hp-purple-200);
+  color: var(--hp-purple-900);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mr .rf-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: end;
+  padding: 11px 0;
+}
+
+.mr .rf-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--hp-purple-700);
+}
+
+.rf-note {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--hp-purple-700);
+}
+
+.rf-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mr .rf-actions .hp-btn {
+  width: auto;
+  margin: 0;
+}
+
+/* ---------- רספונסיביות ---------- */
+
+@media (max-width: 760px) {
+  .mr-stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .mr-stat {
+    padding: 14px 16px;
+  }
+
+  .rf-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .rf-span-2 {
+    grid-column: auto;
+  }
+
+  .mr .rf {
+    padding: 20px 14px;
+  }
+
+  .mr-panel {
+    padding: 16px;
+  }
+
+  /* בנייד הטבלה הופכת לכרטיסים */
+  .mr .reports-table thead {
+    display: none;
+  }
+
+  .mr .reports-table,
+  .mr .reports-table tbody,
+  .mr .reports-table tr,
+  .mr .reports-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .mr .reports-table tr {
+    background: #fbf8fe;
+    border-radius: var(--hp-radius-md);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+
+  .mr .reports-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--hp-purple-200);
+  }
+
+  .mr .reports-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .mr .reports-table td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--hp-purple-700);
+    font-size: 0.85rem;
+  }
+
+  .mr .reports-table .topic-cell {
+    font-size: 1.05rem;
+  }
+
+  .mr .actions-cell {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding-top: 10px;
+  }
+
+  .mr .reports-table td {
+    white-space: normal;
+  }
+}
+
+/* קבוצה ותאריך - בשורה אחת */
+@media (min-width: 761px) {
+  .mr .reports-table td[data-label='קבוצה'],
+  .mr .reports-table td[data-label='תאריך'] {
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,341 @@
+/* =========================================================
+   עמוד כניסה / הרשמה
+   מסך מפוצל: צד סגול עם הדמות, וצד לבן עם הטופס
+   ========================================================= */
+
+.ap {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+}
+
+/* ---------- הצד הסגול ---------- */
+
+.ap-welcome {
+  position: relative;
+  background:
+    radial-gradient(circle at 80% 15%, rgba(255, 255, 255, 0.14), transparent 40%),
+    linear-gradient(160deg, var(--hp-purple-700), var(--hp-purple-500));
+  color: var(--hp-white);
+  padding: 30px 60px 0 70px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ap-logo {
+  align-self: flex-start;
+  height: 64px;
+  background: var(--hp-white);
+  border-radius: 20px;
+  padding: 6px 12px;
+}
+
+.ap-welcome-text {
+  margin-top: 60px;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+}
+
+.hp .ap-welcome h1 {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--hp-white);
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+
+.ap-welcome-spark {
+  width: 40px;
+  height: 40px;
+  transform: translateY(-14px);
+}
+
+.ap-welcome-text p {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  opacity: 0.95;
+}
+
+.ap-character {
+  margin-top: auto;
+  align-self: center;
+  width: clamp(170px, 18vw, 230px);
+  filter: drop-shadow(0 12px 18px rgba(40, 10, 60, 0.3));
+  animation: hp-float 5s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.ap-drops {
+  position: absolute;
+  top: 45%;
+  left: 14%;
+  width: 56px;
+  fill: #c9a8ec;
+  opacity: 0.8;
+}
+
+/* הגל בצד שמאל של החלק הסגול */
+.ap-side-wave {
+  position: absolute;
+  top: 0;
+  left: -1px;
+  height: 100%;
+  width: 60px;
+  fill: var(--hp-white);
+  transform: scaleX(-1);
+}
+
+.ap-side-wave-back {
+  fill: var(--hp-purple-200);
+}
+
+/* ---------- צד הטופס ---------- */
+
+.ap-form-side {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 90px 30px 50px;
+  background:
+    radial-gradient(circle at 15% 85%, var(--hp-mint-100), transparent 30%),
+    var(--hp-white);
+}
+
+.ap-back {
+  position: absolute;
+  top: 24px;
+  left: 30px;
+}
+
+.ap-form-side .hp-leaf {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  width: 130px;
+  opacity: 0.9;
+}
+
+.ap-card {
+  width: min(440px, 100%);
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: 0 18px 50px rgba(74, 31, 110, 0.14);
+  padding: 30px 36px 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.ap-card h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+  margin: 24px 0 18px;
+}
+
+/* מתג התחברות / הרשמה */
+.ap-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--hp-purple-100);
+  border-radius: 999px;
+  padding: 5px;
+}
+
+.ap-tabs button {
+  position: relative;
+  z-index: 1;
+  border: 0;
+  background: transparent;
+  padding: 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--hp-purple-700);
+  transition: color 0.25s;
+}
+
+.ap-tabs button.is-active {
+  color: var(--hp-white);
+}
+
+/* ה"גלולה" הסגולה שזזה בין שתי האפשרויות */
+.ap-tabs-pill {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  right: 5px;
+  width: calc(50% - 5px);
+  border-radius: 999px;
+  background: var(--hp-purple-900);
+  transition: transform 0.3s ease;
+}
+
+.ap-tabs-pill.is-second {
+  transform: translateX(-100%);
+}
+
+.ap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ap-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.ap-field > span {
+  font-weight: 700;
+  color: var(--hp-purple-900);
+  font-size: 0.95rem;
+}
+
+.ap-field small {
+  color: #8a7d99;
+}
+
+.ap-field input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--hp-purple-100);
+  color: var(--hp-text);
+  font: inherit;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.ap-field input[dir='ltr'] {
+  text-align: right;
+}
+
+.ap-field input:focus {
+  outline: none;
+  border-color: var(--hp-mint-500);
+  background: var(--hp-white);
+  box-shadow: 0 0 0 4px var(--hp-mint-100);
+}
+
+.ap-password {
+  position: relative;
+}
+
+.ap-password input {
+  padding-left: 48px;
+}
+
+.ap-eye {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  display: grid;
+  place-items: center;
+}
+
+.ap-eye:hover {
+  background: var(--hp-purple-200);
+}
+
+.ap-eye svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--hp-purple-700);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.ap-submit {
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.ap-switch {
+  display: block;
+  margin: 18px auto 0;
+  border: 0;
+  background: none;
+  color: var(--hp-purple-700);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--hp-yellow);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+
+.ap-switch:hover {
+  color: var(--hp-purple-900);
+}
+
+/* ---------- רספונסיביות ---------- */
+
+@media (max-width: 860px) {
+  .ap {
+    grid-template-columns: 1fr;
+  }
+
+  .ap-welcome {
+    padding: 22px 24px 0;
+    min-height: auto;
+  }
+
+  .ap-welcome-text {
+    margin-top: 24px;
+    max-width: none;
+    text-align: center;
+    margin-inline: auto;
+  }
+
+  .ap-character {
+    width: 120px;
+    margin-top: 10px;
+    margin-bottom: -10px;
+  }
+
+  .ap-side-wave,
+  .ap-drops {
+    display: none;
+  }
+
+  .ap-form-side {
+    padding: 70px 18px 40px;
+  }
+
+  .ap-back {
+    top: 16px;
+    left: 18px;
+  }
+
+  .ap-form-side .hp-leaf {
+    display: none;
+  }
+
+  .ap-card {
+    padding: 24px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-character {
+    animation: none;
+  }
+
+  .ap-tabs-pill {
+    transition: none;
+  }
+}

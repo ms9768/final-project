@@ -1,0 +1,173 @@
+/* =========================================================
+   בקשות הרשמה (pa)
+   ========================================================= */
+
+.pa {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pa-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: 0 18px 50px rgba(74, 31, 110, 0.14);
+  padding: 16px 22px;
+}
+
+.pa-count {
+  font-weight: 700;
+  color: var(--hp-purple-900);
+  font-size: 1.1rem;
+}
+
+.pa-refresh {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pa-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+
+.pa-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: var(--hp-shadow);
+  padding: 22px;
+  border-inline-start: 6px solid var(--hp-mint-300);
+}
+
+.pa-person {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pa-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--hp-purple-200);
+  color: var(--hp-purple-900);
+  font-weight: 800;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  transform: rotate(-5deg);
+}
+
+.pa-person h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.pa-person p {
+  color: #7c6f8c;
+  text-align: right;
+  word-break: break-all;
+}
+
+/* בחירת סיווג - שני כפתורים במקום רשימה */
+.pa-levels {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pa-levels legend {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--hp-purple-700);
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.pa-level {
+  position: relative;
+  text-align: center;
+  padding: 10px;
+  border-radius: 999px;
+  border: 2px solid var(--hp-purple-200);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.pa-level input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pa-level:hover {
+  border-color: var(--hp-purple-500);
+}
+
+.pa-level:has(input:focus-visible) {
+  outline: 3px solid var(--hp-yellow);
+  outline-offset: 2px;
+}
+
+.pa-level.is-selected {
+  background: var(--hp-mint-300);
+  border-color: var(--hp-mint-500);
+  color: var(--hp-purple-900);
+  font-weight: 700;
+}
+
+.pa-levels:disabled .pa-level {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pa-approve {
+  justify-content: center;
+}
+
+.pa-empty {
+  text-align: center;
+  padding: 30px 0;
+  color: var(--hp-purple-900);
+}
+
+.pa-empty img {
+  height: 170px;
+  margin-bottom: 10px;
+  animation: hp-float 5s ease-in-out infinite;
+}
+
+.pa-empty p {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.pa-empty span {
+  color: #7c6f8c;
+}
+
+@media (max-width: 500px) {
+  .pa-list {
+    grid-template-columns: 1fr;
+  }
+}

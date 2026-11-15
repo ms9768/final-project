@@ -1,7 +1,14 @@
 
 import { useEffect, useState } from 'react'
+import character from '../assets/character.png'
+import './PendingApprovals.css'
 
 const API_URL = 'http://localhost:7001/api/users'
+
+const LEVELS = [
+    { value: 'young', label: 'מנחה צעירה' },
+    { value: 'senior', label: 'מנחה בוגרת' },
+]
 
 function PendingApprovals({ authToken }) {
     const [users, setUsers] = useState([])
@@ -92,65 +99,103 @@ function PendingApprovals({ authToken }) {
     }
 
     return (
-        <section className="pending-approvals">
-            <h2>בקשות הרשמה לאישור</h2>
-
-            {loading ? (
-                <p className="status-message">טוען בקשות...</p>
-            ) : error ? (
-                <p className="status-message error">{error}</p>
-            ) : users.length === 0 ? (
-                <p className="status-message">
-                    {message || 'אין בקשות הרשמה שממתינות לאישור.'}
+        <section className="pa">
+            <div className="pa-toolbar">
+                <p className="pa-count">
+                    {loading
+                        ? 'טוען בקשות...'
+                        : users.length === 0
+                            ? 'אין בקשות שממתינות'
+                            : users.length === 1
+                                ? 'בקשה אחת ממתינה לאישור'
+                                : `${users.length} בקשות ממתינות לאישור`}
                 </p>
-            ) : (
-                <div className="pending-users-list">
-                    {users.map((user) => (
-                        <div className="pending-user-card" key={user._id}>
-                            <div>
-                                <h3>{user.fullName}</h3>
-                                <p>{user.email}</p>
 
-                                <label>
-                                    סיווג המנחה:
-                                    <select
-                                        value={facilitatorLevels[user._id] || ''}
-                                        onChange={(e) =>
-                                            handleLevelChange(
-                                                user._id,
-                                                e.target.value
-                                            )
-                                        }
-                                        disabled={approvingId !== null}
-                                    >
-                                        <option value="">בחרי סיווג</option>
-                                        <option value="young">מנחה צעירה</option>
-                                        <option value="senior">מנחה בוגרת</option>
-                                    </select>
-                                </label>
-                            </div>
+                <button
+                    type="button"
+                    className="hp-btn hp-btn-outline hp-btn-sm"
+                    onClick={loadPendingUsers}
+                    disabled={loading || approvingId !== null}
+                >
+                    <svg className="pa-refresh" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" />
+                    </svg>
+                    רענון בקשות
+                </button>
+            </div>
 
-                            <button
-                                type="button"
-                                onClick={() => approveUser(user._id)}
-                                disabled={approvingId !== null}
-                            >
-                                {approvingId === user._id
-                                    ? 'מאשרת...'
-                                    : 'אישור מנחה'}
-                            </button>
-                        </div>
-                    ))}
-                </div>
+            {message && users.length > 0 && (
+                <p className="hp-alert hp-alert-success" role="status">
+                    <span aria-hidden="true">✓</span>
+                    {message}
+                </p>
             )}
 
-            <button
-                type="button"
-                onClick={loadPendingUsers}
-                disabled={loading || approvingId !== null}
-            >
-                רענון בקשות
-            </button>
+            {error && (
+                <p className="hp-alert hp-alert-error" role="alert">
+                    <span aria-hidden="true">!</span>
+                    {error}
+                </p>
+            )}
+
+            {loading || (error && users.length === 0) ? null : users.length === 0 ? (
+                <div className="pa-empty">
+                    <img src={character} alt="" />
+                    <p>{message || 'אין בקשות הרשמה שממתינות לאישור.'}</p>
+                    {!message && <span>כל הבקשות טופלו</span>}
+                </div>
+            ) : (
+                <div className="pa-list">
+                    {users.map((user) => {
+                        const selectedLevel = facilitatorLevels[user._id] || ''
+
+                        return (
+                            <article className="pa-card" key={user._id}>
+                                <div className="pa-person">
+                                    <span className="pa-avatar" aria-hidden="true">
+                                        {user.fullName?.trim()?.[0] || '?'}
+                                    </span>
+                                    <div>
+                                        <h3>{user.fullName}</h3>
+                                        <p dir="ltr">{user.email}</p>
+                                    </div>
+                                </div>
+
+                                <fieldset className="pa-levels" disabled={approvingId !== null}>
+                                    <legend>סיווג המנחה</legend>
+
+                                    {LEVELS.map((level) => (
+                                        <label
+                                            key={level.value}
+                                            className={`pa-level ${selectedLevel === level.value ? 'is-selected' : ''}`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name={`level-${user._id}`}
+                                                value={level.value}
+                                                checked={selectedLevel === level.value}
+                                                onChange={() => handleLevelChange(user._id, level.value)}
+                                            />
+                                            {level.label}
+                                        </label>
+                                    ))}
+                                </fieldset>
+
+                                <button
+                                    type="button"
+                                    className="hp-btn hp-btn-purple hp-btn-sm pa-approve"
+                                    onClick={() => approveUser(user._id)}
+                                    disabled={approvingId !== null || !selectedLevel}
+                                    title={!selectedLevel ? 'יש לבחור סיווג לפני האישור' : undefined}
+                                >
+                                    {approvingId === user._id ? 'מאשרת...' : 'אישור מנחה'}
+                                    {approvingId !== user._id && <span aria-hidden="true">✓</span>}
+                                </button>
+                            </article>
+                        )
+                    })}
+                </div>
+            )}
         </section>
     )
 }

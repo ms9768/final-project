@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import "../PaymentManagement.css";
+import "./AdminPages.css";
+import "./PaymentManager.css";
+import PageShell from "./ui/PageShell";
 import {
   exportPaymentWorkbook,
   getPaymentFacilitators,
@@ -116,196 +119,207 @@ function PaymentManagementPage() {
     0
   );
 
+  const unpaidCount = reports.filter((report) => report.paymentStatus !== "paid").length;
+  const hasFilters = Object.values(filters).some(Boolean);
+
   return (
-    <main className="payment-management-page" dir="rtl">
-      <header className="payment-management-header">
-        <div>
-          <p className="eyebrow">ניהול תשלומים</p>
-          <h1>תשלומי מנחות</h1>
-          <p>דיווחים שאושרו על ידי רכזת בלבד</p>
-        </div>
-        <button
-          type="button"
-          className="payment-export-button"
-          onClick={handleExport}
-          disabled={exporting}
-        >
-          {exporting ? "מכינה קובץ..." : "ייצוא Excel"}
-        </button>
-      </header>
+    <PageShell
+      className="pm"
+      eyebrow="ניהול תשלומים"
+      title="תשלומי מנחות"
+      subtitle="דיווחים שאושרו על ידי רכזת בלבד"
+    >
+      <div className="adm">
+        <section className="adm-summary pm-summary">
+          <div className="adm-summary-main">
+            <span>סכום הדיווחים המוצגים</span>
+            <strong>{formatAmount(totalAmount)}</strong>
+          </div>
 
-      <section className="payment-management-summary">
-        <div>
-          <span>דיווחים בתקופה שנבחרה</span>
-          <strong>{reports.length}</strong>
-        </div>
-        <div>
-          <span>סכום הדיווחים המוצגים</span>
-          <strong>{formatAmount(totalAmount)}</strong>
-        </div>
-      </section>
+          <div className="adm-summary-item">
+            <strong>{reports.length}</strong>
+            <span>דיווחים בתקופה שנבחרה</span>
+          </div>
 
-      <section className="payment-management-filters" aria-label="סינון תשלומים">
-        <label>
-          מנחה
-          <select
-            name="facilitatorId"
-            value={filters.facilitatorId}
-            onChange={updateFilter}
-          >
-            <option value="">כל המנחות</option>
-            {facilitators.map((facilitator) => (
-              <option key={facilitator._id} value={facilitator._id}>
-                {facilitator.fullName} — {facilitator.email}
-              </option>
-            ))}
-          </select>
-        </label>
+          <div className="adm-summary-item">
+            <strong>{unpaidCount}</strong>
+            <span>ממתינים לתשלום</span>
+          </div>
+        </section>
 
-        <label>
-          מתאריך
-          <input
-            name="fromDate"
-            type="date"
-            value={filters.fromDate}
-            onChange={updateFilter}
-          />
-        </label>
+        <section className="adm-card pm-filters" aria-label="סינון תשלומים">
+          <div className="pm-filters-head">
+            <h2 className="adm-card-title">סינון</h2>
 
-        <label>
-          עד תאריך
-          <input
-            name="toDate"
-            type="date"
-            value={filters.toDate}
-            onChange={updateFilter}
-          />
-        </label>
+            <div className="pm-filters-actions">
+              {hasFilters && (
+                <button
+                  type="button"
+                  className="pm-clear"
+                  onClick={() => {
+                    setLoading(true);
+                    setReports([]);
+                    setFilters(EMPTY_FILTERS);
+                  }}
+                >
+                  ניקוי סינון
+                </button>
+              )}
 
-        <label>
-          מצב תשלום
-          <select
-            name="paymentStatus"
-            value={filters.paymentStatus}
-            onChange={updateFilter}
-          >
-            <option value="">כל המצבים</option>
-            <option value="not_started">טרם שולם</option>
-            <option value="paid">שולם</option>
-          </select>
-        </label>
+              <button
+                type="button"
+                className="hp-btn hp-btn-mint hp-btn-sm"
+                onClick={handleExport}
+                disabled={exporting}
+              >
+                <svg className="pm-excel" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 3v5h5M9 12l4 5M13 12l-4 5" />
+                </svg>
+                {exporting ? "מכינה קובץ..." : "ייצוא Excel"}
+              </button>
+            </div>
+          </div>
 
-        <label>
-          פרטי חשבון בנק
-          <select
-            name="bankDetailsStatus"
-            value={filters.bankDetailsStatus}
-            onChange={updateFilter}
-          >
-            <option value="">כל המצבים</option>
-            <option value="provided">התקבלו</option>
-            <option value="not_submitted">טרם נמסרו</option>
-          </select>
-        </label>
-      </section>
+          <div className="pm-filters-grid">
+            <label className="adm-field pm-field-wide">
+              <span>מנחה</span>
+              <select name="facilitatorId" value={filters.facilitatorId} onChange={updateFilter}>
+                <option value="">כל המנחות</option>
+                {facilitators.map((facilitator) => (
+                  <option key={facilitator._id} value={facilitator._id}>
+                    {facilitator.fullName} — {facilitator.email}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-      {error && (
-        <p className="payment-management-message error" role="alert">
-          {error}
-        </p>
-      )}
-      {message && (
-        <p className="payment-management-message" role="status">
-          {message}
-        </p>
-      )}
+            <label className="adm-field">
+              <span>מתאריך</span>
+              <input name="fromDate" type="date" value={filters.fromDate} onChange={updateFilter} />
+            </label>
 
-      <div className="payment-management-table-wrapper">
-        <table className="payment-management-table">
-          <thead>
-            <tr>
-              <th>מנחה</th>
-              <th>תאריך פגישה</th>
-              <th>קבוצה / בית ספר</th>
-              <th>סכום מאושר</th>
-              <th>פרטי חשבון</th>
-              <th>מצב תשלום</th>
-              <th>פעולה</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="7">טוענת דיווחים מאושרים...</td>
-              </tr>
-            ) : reports.length === 0 ? (
-              <tr>
-                <td colSpan="7">לא נמצאו דיווחים מאושרים בסינון שנבחר.</td>
-              </tr>
-            ) : (
-              reports.map((report) => {
-                const facilitator = report.facilitatorId || {};
-                const groupName =
-                  report.schoolName ||
-                  report.groupId?.schoolName ||
-                  report.groupId?.name ||
-                  "—";
+            <label className="adm-field">
+              <span>עד תאריך</span>
+              <input name="toDate" type="date" value={filters.toDate} onChange={updateFilter} />
+            </label>
 
-                return (
-                  <tr key={report._id}>
-                    <td>
-                      <strong>{facilitator.fullName || "—"}</strong>
-                      <small>{facilitator.email || "—"}</small>
-                    </td>
-                    <td>
-                      {report.meetingDate
-                        ? new Date(report.meetingDate).toLocaleDateString("he-IL")
-                        : "—"}
-                    </td>
-                    <td>{groupName}</td>
-                    <td>{formatAmount(report.paymentAmount)}</td>
-                    <td>
-                      <span
-                        className={`payment-status-pill ${
-                          report.bankDetailsStatus === "provided"
-                            ? "complete"
-                            : "missing"
-                        }`}
-                      >
-                        {report.bankDetailsStatus === "provided"
-                          ? "התקבלו"
-                          : "טרם נמסרו"}
-                      </span>
-                    </td>
-                    <td>{formatStatus(report.paymentStatus)}</td>
-                    <td>
-                      {report.paymentStatus === "paid" ? (
-                        <span className="payment-paid-label">שולם</span>
-                      ) : (
-                        <button
-                          type="button"
-                          className="payment-mark-paid-button"
-                          onClick={() => handleMarkPaid(report._id)}
-                          disabled={updatingReportId === report._id}
-                        >
-                          {updatingReportId === report._id
-                            ? "מעדכנת..."
-                            : "סימון כשולם"}
-                        </button>
-                      )}
-                    </td>
+            <label className="adm-field">
+              <span>מצב תשלום</span>
+              <select name="paymentStatus" value={filters.paymentStatus} onChange={updateFilter}>
+                <option value="">כל המצבים</option>
+                <option value="not_started">טרם שולם</option>
+                <option value="paid">שולם</option>
+              </select>
+            </label>
+
+            <label className="adm-field">
+              <span>פרטי חשבון בנק</span>
+              <select name="bankDetailsStatus" value={filters.bankDetailsStatus} onChange={updateFilter}>
+                <option value="">כל המצבים</option>
+                <option value="provided">התקבלו</option>
+                <option value="not_submitted">טרם נמסרו</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        {error && (
+          <p className="hp-alert hp-alert-error" role="alert">
+            <span aria-hidden="true">!</span>
+            {error}
+          </p>
+        )}
+        {message && (
+          <p className="hp-alert hp-alert-success" role="status">
+            <span aria-hidden="true">✓</span>
+            {message}
+          </p>
+        )}
+
+        <section className="adm-card pm-table-card">
+          {loading ? (
+            <p className="adm-state">טוענת דיווחים מאושרים...</p>
+          ) : reports.length === 0 ? (
+            <p className="adm-state">לא נמצאו דיווחים מאושרים בסינון שנבחר.</p>
+          ) : (
+            <div className="pm-table-wrapper">
+              <table className="pm-table">
+                <thead>
+                  <tr>
+                    <th>מנחה</th>
+                    <th>תאריך פגישה</th>
+                    <th>קבוצה / בית ספר</th>
+                    <th>סכום מאושר</th>
+                    <th>פרטי חשבון</th>
+                    <th>מצב תשלום</th>
+                    <th>פעולה</th>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                </thead>
+                <tbody>
+                  {reports.map((report) => {
+                    const facilitator = report.facilitatorId || {};
+                    const groupName =
+                      report.schoolName ||
+                      report.groupId?.schoolName ||
+                      report.groupId?.name ||
+                      "—";
+                    const isPaid = report.paymentStatus === "paid";
+                    const hasBank = report.bankDetailsStatus === "provided";
 
-      <p className="payment-management-note">
-        סימון כתשלום מתעד את סטטוס התשלום בלבד. המערכת אינה מבצעת העברה בנקאית.
-      </p>
-    </main>
+                    return (
+                      <tr key={report._id} className={isPaid ? "is-paid" : ""}>
+                        <td data-label="מנחה">
+                          <div className="pm-person">
+                            <strong>{facilitator.fullName || "—"}</strong>
+                            <small>{facilitator.email || "—"}</small>
+                          </div>
+                        </td>
+                        <td data-label="תאריך">
+                          {report.meetingDate
+                            ? new Date(report.meetingDate).toLocaleDateString("he-IL")
+                            : "—"}
+                        </td>
+                        <td data-label="קבוצה">{groupName}</td>
+                        <td data-label="סכום" className="pm-amount">{formatAmount(report.paymentAmount)}</td>
+                        <td data-label="פרטי חשבון">
+                          <span className={`adm-tag ${hasBank ? "bd-tag-ok" : "bd-tag-missing"}`}>
+                            {hasBank ? "התקבלו" : "טרם נמסרו"}
+                          </span>
+                        </td>
+                        <td data-label="מצב תשלום">
+                          <span className={`adm-tag ${isPaid ? "bd-tag-ok" : "pm-tag-unpaid"}`}>
+                            {formatStatus(report.paymentStatus)}
+                          </span>
+                        </td>
+                        <td className="pm-action-cell">
+                          {isPaid ? (
+                            <span className="pm-paid">✓ שולם</span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="pm-mark"
+                              onClick={() => handleMarkPaid(report._id)}
+                              disabled={updatingReportId === report._id}
+                            >
+                              {updatingReportId === report._id ? "מעדכנת..." : "סימון כשולם"}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <p className="pm-note">
+          סימון כתשלום מתעד את סטטוס התשלום בלבד. המערכת אינה מבצעת העברה בנקאית.
+        </p>
+      </div>
+    </PageShell>
   );
 }
 

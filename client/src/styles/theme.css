@@ -1,0 +1,348 @@
+/* =========================================================
+   ערכת העיצוב המשותפת לכל האתר
+   צבעים, פונט, כפתורים, כותרות וקישוטים שחוזרים בכל העמודים
+   ========================================================= */
+
+/* הפונט Rubik נטען ב-index.html */
+
+:root {
+  /* ---- פלטת צבעים (משתנים) - משותפת לכל האתר ---- */
+  --hp-purple-900: #4a1f6e;   /* טקסט כותרות */
+  --hp-purple-700: #7a3fa0;   /* צבע ראשי */
+  --hp-purple-500: #9a62c4;
+  --hp-purple-200: #e6d9f5;   /* רקעים בהירים */
+  --hp-purple-100: #f3ecfb;
+  --hp-mint-500: #6fd0bd;     /* כמו השמלה של הדמות */
+  --hp-mint-300: #a8e6d8;
+  --hp-mint-100: #e3f6f1;
+  --hp-yellow: #f7c531;       /* ניצוצות והדגשות */
+  --hp-text: #3e3150;
+  --hp-white: #ffffff;
+
+  --hp-radius-lg: 28px;
+  --hp-radius-md: 18px;
+  --hp-shadow: 0 10px 30px rgba(74, 31, 110, 0.10);
+  --hp-max: 1180px;
+}
+
+/* בסיס לכל עמוד בעיצוב החדש */
+.hp {
+  font-family: 'Rubik', 'Varela Round', Arial, sans-serif;
+  color: var(--hp-text);
+  background: var(--hp-white);
+  overflow-x: clip;
+}
+
+.hp *,
+.hp *::before,
+.hp *::after {
+  box-sizing: border-box;
+}
+
+.hp h1,
+.hp h2,
+.hp h3,
+.hp p {
+  margin: 0;
+}
+
+.hp-section {
+  width: min(var(--hp-max), 100% - 40px);
+  margin-inline: auto;
+  padding-block: 56px;
+  position: relative;
+}
+
+/* ---------- רכיבים קטנים חוזרים ---------- */
+
+.hp-spark {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: var(--hp-yellow);
+  stroke-width: 4;
+  stroke-linecap: round;
+  flex-shrink: 0;
+}
+
+.hp-arrow {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hp-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.hp-title .hp-spark {
+  transform: translateY(-14px);
+}
+
+.hp-title-center {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.hp-subtitle {
+  text-align: center;
+  margin: -18px 0 34px;
+  font-size: 1.05rem;
+}
+
+/* מעטפה מאוירת (משמשת בדף הבית ובעמוד יצירת קשר) */
+.hp-envelope {
+  width: 100%;
+  max-width: 280px;
+  fill: none;
+  stroke: var(--hp-purple-900);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+
+.hp-envelope-body {
+  fill: var(--hp-white);
+}
+
+.hp-envelope-trail {
+  stroke: var(--hp-white);
+  stroke-dasharray: 8 8;
+  opacity: 0.85;
+}
+
+/* עלה מאויר */
+.hp-leaf {
+  width: 170px;
+  justify-self: center;
+}
+
+.hp-leaf-blob {
+  fill: var(--hp-mint-100);
+}
+
+.hp-leaf-branch path {
+  stroke: #3a9e8d;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hp-leaf-stem,
+.hp-leaf-vein {
+  fill: none;
+}
+
+.hp-leaf-shape {
+  fill: #a9e2d6;
+}
+
+/* ריחוף עדין של הדמות */
+@keyframes hp-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ---------- כפתורים ---------- */
+
+.hp .hp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 30px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.hp .hp-btn:hover {
+  transform: translateY(-2px);
+}
+
+.hp .hp-btn:focus-visible,
+.hp a:focus-visible,
+.hp button:focus-visible {
+  outline: 3px solid var(--hp-yellow);
+  outline-offset: 3px;
+}
+
+.hp .hp-btn-mint {
+  background: var(--hp-mint-300);
+  color: var(--hp-purple-900);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.08);
+}
+
+.hp .hp-btn-mint:hover {
+  background: var(--hp-mint-500);
+}
+
+.hp .hp-btn-purple {
+  background: var(--hp-purple-900);
+  color: var(--hp-white);
+  box-shadow: 0 6px 0 rgba(74, 31, 110, 0.18);
+}
+
+.hp .hp-btn-purple:hover {
+  background: var(--hp-purple-700);
+}
+
+.hp .hp-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+
+.hp .hp-btn-outline {
+  background: var(--hp-white);
+  color: var(--hp-purple-900);
+  border-color: var(--hp-purple-900);
+}
+
+.hp .hp-btn-outline:hover {
+  background: var(--hp-purple-900);
+  color: var(--hp-white);
+}
+
+.hp .hp-btn-sm {
+  padding: 9px 22px;
+  font-size: 0.95rem;
+}
+
+
+/* ---------- כפתור חזרה (פס עליון) ---------- */
+
+.ps-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 2px solid var(--hp-purple-900);
+  background: var(--hp-white);
+  color: var(--hp-purple-900);
+  font-weight: 700;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ps-back:hover {
+  background: var(--hp-purple-900);
+  color: var(--hp-white);
+}
+
+/* ---------- הודעות הצלחה / שגיאה ---------- */
+
+.hp-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-weight: 500;
+}
+
+.hp-alert span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  flex-shrink: 0;
+  color: var(--hp-white);
+}
+
+.hp-alert-success {
+  background: var(--hp-mint-100);
+  color: #1f6b5d;
+}
+
+.hp-alert-success span {
+  background: #3a9e8d;
+}
+
+.hp-alert-error {
+  background: #fdeaea;
+  color: #a12f3a;
+}
+
+.hp-alert-error span {
+  background: #d9534f;
+}
+
+
+/* ---------- פס המשתמשת המחוברת (מופיע מעל כל עמוד אחרי התחברות) ---------- */
+
+.app-shell > .user-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px max(20px, (100% - var(--hp-max)) / 2);
+  background: var(--hp-purple-900);
+  color: var(--hp-white);
+  font-family: 'Rubik', 'Varela Round', Arial, sans-serif;
+  font-size: 0.92rem;
+}
+
+.app-shell > .user-toolbar button {
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 16px;
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--hp-white);
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.app-shell > .user-toolbar button:hover {
+  background: var(--hp-mint-300);
+  color: var(--hp-purple-900);
+}
+
+/* ---------- עמוד "בקרוב" ---------- */
+
+.hp-soon {
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: 0 18px 50px rgba(74, 31, 110, 0.12);
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--hp-purple-900);
+}
+
+.hp-soon img {
+  height: 170px;
+  margin-bottom: 12px;
+  animation: hp-float 5s ease-in-out infinite;
+}
+
+.hp-soon h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.hp-soon p {
+  color: #7c6f8c;
+}
+
+/* קיצור דרך לדיווחים בתחתית דף הבית (למנחה מחוברת) */
+.hp-home-shortcut {
+  display: flex;
+  justify-content: center;
+  padding: 10px 20px 40px;
+}

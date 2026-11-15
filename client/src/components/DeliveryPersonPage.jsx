@@ -1,7 +1,22 @@
 
 import { useEffect, useState } from "react";
+import logo from "../assets/logo.png";
+import character from "../assets/character.png";
+import "./AdminPages.css";
+import "./BankDetails.css";
+import "./DeliveryPerson.css";
 
 const API_URL = "http://localhost:7001/api/deliveries";
+
+// מעטפת ממותגת לכל המצבים של העמוד (מוגדרת מחוץ לקומפוננטה כדי שהשדות לא יאבדו פוקוס)
+function Shell({ children }) {
+    return (
+        <main className="hp bd-public dp" dir="rtl">
+            <img src={logo} alt="מבט לגובה" className="bd-public-logo" />
+            <section className="dp-card">{children}</section>
+        </main>
+    );
+}
 
 function DeliveryPersonPage({ token }) {
     const [delivery, setDelivery] = useState(null);
@@ -102,45 +117,105 @@ function DeliveryPersonPage({ token }) {
         }
     }
 
-    if (loading) return <p>טוען פרטי משלוח...</p>;
+    const STEPS = ["pending", "approved", "on_the_way", "delivered"];
+    const STEP_LABELS = { pending: "נשלח", approved: "אושר", on_the_way: "בדרך", delivered: "נמסר" };
+
+    if (loading) {
+        return (
+            <Shell>
+                <p className="adm-state">טוען פרטי משלוח...</p>
+            </Shell>
+        );
+    }
 
     if (error && !delivery) {
-        return <main dir="rtl"><p>{error}</p></main>;
+        return (
+            <Shell>
+                <p className="hp-alert hp-alert-error" role="alert">
+                    <span aria-hidden="true">!</span>
+                    {error}
+                </p>
+            </Shell>
+        );
     }
 
     if (!delivery) return null;
 
+    const stepIndex = STEPS.indexOf(delivery.status);
+    const fullAddress = `${delivery.address}, ${delivery.city}`;
+
     return (
-        <main className="delivery-page" dir="rtl">
-            <h1>פרטי משלוח</h1>
+        <Shell>
+            <div className="dp-head">
+                <span className="dp-eyebrow">משלוח עבור</span>
+                <h1>{delivery.recipientName}</h1>
+            </div>
 
-            <section className="delivery-details">
-                <p><strong>שם המקבל:</strong> {delivery.recipientName}</p>
-                <p><strong>טלפון:</strong> {delivery.phone}</p>
-                <p><strong>עיר:</strong> {delivery.city}</p>
-                <p><strong>כתובת:</strong> {delivery.address}</p>
-                <p>
-                    <strong>תאריך משלוח:</strong>{" "}
-                    {new Date(delivery.deliveryDate).toLocaleDateString("he-IL")}
-                </p>
-                <p><strong>פריטים:</strong> {delivery.items}</p>
-                {delivery.notes && <p><strong>הערות:</strong> {delivery.notes}</p>}
-            </section>
+            <ol className="dlv-steps" aria-label="שלבי המשלוח">
+                {STEPS.map((step, index) => (
+                    <li
+                        key={step}
+                        className={index <= stepIndex ? "is-done" : ""}
+                        aria-current={index === stepIndex ? "step" : undefined}
+                    >
+                        <span className="dlv-step-dot" aria-hidden="true">
+                            {index < stepIndex || (step === "delivered" && index === stepIndex) ? "✓" : index + 1}
+                        </span>
+                        {STEP_LABELS[step]}
+                    </li>
+                ))}
+            </ol>
 
-            <p><strong>סטטוס:</strong> {
-                {
-                    pending: "ממתין לאישור",
-                    approved: "אושר",
-                    on_the_way: "בדרך",
-                    delivered: "נמסר",
-                }[delivery.status]
-            }</p>
+            {/* פעולות מהירות למשלוחן */}
+            <div className="dp-quick">
+                <a className="dp-quick-btn" href={`tel:${delivery.phone}`}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
+                    </svg>
+                    <span>חיוג</span>
+                    <small dir="ltr">{delivery.phone}</small>
+                </a>
+                <a
+                    className="dp-quick-btn"
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z" />
+                        <circle cx="12" cy="10" r="2.6" />
+                    </svg>
+                    <span>ניווט</span>
+                    <small>{fullAddress}</small>
+                </a>
+            </div>
+
+            <dl className="dlv-details">
+                <div>
+                    <dt>תאריך משלוח</dt>
+                    <dd>{new Date(delivery.deliveryDate).toLocaleDateString("he-IL")}</dd>
+                </div>
+                <div>
+                    <dt>עיר</dt>
+                    <dd>{delivery.city}</dd>
+                </div>
+                <div className="dlv-details-wide">
+                    <dt>פריטים</dt>
+                    <dd>{delivery.items}</dd>
+                </div>
+                {delivery.notes && (
+                    <div className="dlv-details-wide dp-notes">
+                        <dt>הערות</dt>
+                        <dd>{delivery.notes}</dd>
+                    </div>
+                )}
+            </dl>
 
             {delivery.status === "pending" && (
-                <section>
+                <section className="dp-action">
                     <h2>אישור המשלוח</h2>
-                    <label>
-                        זמן הגעה משוער
+                    <label className="adm-field">
+                        <span>מתי משוער שתגיעו?</span>
                         <input
                             type="datetime-local"
                             value={estimatedArrival}
@@ -150,6 +225,7 @@ function DeliveryPersonPage({ token }) {
                     </label>
                     <button
                         type="button"
+                        className="hp-btn hp-btn-purple dp-big-btn"
                         onClick={confirmDelivery}
                         disabled={saving || !estimatedArrival}
                     >
@@ -158,32 +234,56 @@ function DeliveryPersonPage({ token }) {
                 </section>
             )}
 
+            {(delivery.status === "approved" || delivery.status === "on_the_way") && (
+                <form className="dp-action" onSubmit={completeDelivery}>
+                    <h2>אישור מסירה</h2>
 
+                    <label className={`dp-upload ${photo ? "has-file" : ""}`}>
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            capture="environment"
+                            onChange={(event) => setPhoto(event.target.files?.[0] || null)}
+                            required
+                        />
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+                            <circle cx="12" cy="13" r="3.5" />
+                        </svg>
+                        <strong>{photo ? "התמונה נבחרה" : "צילום המשלוח ביעד"}</strong>
+                        <span>{photo ? photo.name : "לחיצה כאן פותחת את המצלמה או את הגלריה"}</span>
+                    </label>
 
-            {(delivery.status === "approved" || delivery.status === "on_the_way") && (<form onSubmit={completeDelivery}>
-                <h2>אישור מסירה</h2>
-                <label>
-                    העלאת תמונה של המשלוח ביעד
-                    <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={(event) => setPhoto(event.target.files?.[0] || null)}
-                        required
-                    />
-                </label>
-                <button type="submit" disabled={saving || !photo}>
-                    {saving ? "מעלה תמונה..." : "אישור מסירה והעלאת תמונה"}
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        className="hp-btn hp-btn-purple dp-big-btn"
+                        disabled={saving || !photo}
+                    >
+                        {saving ? "מעלה תמונה..." : "אישור מסירה והעלאת תמונה"}
+                    </button>
+                </form>
             )}
 
             {delivery.status === "delivered" && (
-                <p>המשלוח הושלם בהצלחה. תודה!</p>
+                <div className="dp-done">
+                    <img src={character} alt="" />
+                    <strong>המשלוח הושלם בהצלחה. תודה!</strong>
+                </div>
             )}
 
-            {error && <p className="status-message error">{error}</p>}
-            {message && <p className="status-message">{message}</p>}
-        </main>
+            {error && (
+                <p className="hp-alert hp-alert-error" role="alert">
+                    <span aria-hidden="true">!</span>
+                    {error}
+                </p>
+            )}
+            {message && (
+                <p className="hp-alert hp-alert-success" role="status">
+                    <span aria-hidden="true">✓</span>
+                    {message}
+                </p>
+            )}
+        </Shell>
     );
 }
 

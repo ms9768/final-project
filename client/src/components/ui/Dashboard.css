@@ -1,0 +1,276 @@
+/* =========================================================
+   לוחות בקרה (רכזת / מנחה)
+   ========================================================= */
+
+.db {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+/* ---------- אריח מודגש ---------- */
+
+.db-featured {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  border: 0;
+  text-align: right;
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: 0 18px 50px rgba(74, 31, 110, 0.14);
+  padding: 26px 30px;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+  overflow: hidden;
+}
+
+.db-featured::after {
+  /* כתם מנטה דקורטיבי */
+  content: '';
+  position: absolute;
+  left: -40px;
+  bottom: -60px;
+  width: 220px;
+  height: 180px;
+  border-radius: 50%;
+  background: var(--hp-mint-100);
+  z-index: 0;
+}
+
+.db-featured > * {
+  position: relative;
+  z-index: 1;
+}
+
+.db-featured:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 54px rgba(74, 31, 110, 0.18);
+}
+
+.db-featured-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: var(--hp-mint-300);
+  flex-shrink: 0;
+  transform: rotate(-6deg);
+}
+
+.db-featured-icon .hp-line-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.db-featured-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.db-featured-text strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.db-featured-text span {
+  color: var(--hp-text);
+}
+
+.db-featured-cta {
+  flex-shrink: 0;
+}
+
+.db-featured-spark {
+  position: absolute;
+  top: 12px;
+  right: 92px;
+  transform: rotate(10deg);
+}
+
+/* ---------- קבוצות ---------- */
+
+/* הקבוצות יושבות זו לצד זו; רוחב כל קבוצה לפי מספר האריחים שבה */
+.db-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.db-group {
+  flex: var(--count) 1 calc(var(--count) * 220px);
+  background: var(--tone-bg);
+  border-radius: var(--hp-radius-lg);
+  padding: 24px 24px 26px;
+}
+
+.db-tone-purple { --tone-bg: var(--hp-purple-100); --tone-icon: var(--hp-purple-200); }
+.db-tone-mint { --tone-bg: var(--hp-mint-100); --tone-icon: var(--hp-mint-300); }
+.db-tone-yellow { --tone-bg: #fff8e2; --tone-icon: #ffe7a3; }
+.db-tone-lilac { --tone-bg: #f7f1fd; --tone-icon: #eadcf8; }
+
+.db-group-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+  margin-bottom: 16px;
+}
+
+.db-group-title::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--hp-yellow);
+}
+
+.db-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* ---------- אריח ---------- */
+
+.db-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  border: 0;
+  text-align: right;
+  background: var(--hp-white);
+  border-radius: var(--hp-radius-md);
+  padding: 20px 20px 16px;
+  box-shadow: 0 6px 18px rgba(74, 31, 110, 0.07);
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.db-tile:hover {
+  transform: translateY(-5px) rotate(-0.5deg);
+  box-shadow: 0 14px 30px rgba(74, 31, 110, 0.14);
+}
+
+.db-tile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--tone-icon);
+  margin-bottom: 4px;
+  transition: transform 0.25s;
+}
+
+.db-tile:hover .db-tile-icon {
+  transform: rotate(-8deg) scale(1.05);
+}
+
+.hp-line-icon {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: var(--hp-purple-900);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.db-tile-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--hp-purple-900);
+}
+
+.db-tile-description {
+  color: var(--hp-text);
+  line-height: 1.5;
+  font-size: 0.95rem;
+  flex-grow: 1;
+}
+
+.db-tile-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--hp-purple-700);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.db-tile-go .hp-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s;
+}
+
+.db-tile:hover .db-tile-go .hp-arrow {
+  transform: translateX(-4px);
+}
+
+/* ---------- רספונסיביות ---------- */
+
+@media (max-width: 1000px) {
+  .db-group {
+    flex-basis: 100%;
+  }
+
+  .db-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .db-featured {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 22px;
+  }
+
+  .db-featured-cta {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .db-group {
+    flex-basis: 100%;
+    padding: 18px 14px;
+  }
+
+  .db-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .db-tile {
+    padding: 14px 12px;
+  }
+
+  .db-tile-description {
+    display: none;            /* בנייד - רק אייקון וכותרת */
+  }
+
+  /* אריח יחיד בקבוצה תופס את כל הרוחב */
+  .db-tile:only-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-tile,
+  .db-tile-icon,
+  .db-featured {
+    transition: none;
+  }
+}

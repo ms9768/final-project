@@ -171,7 +171,7 @@ function ReportList({
               return (
                 <tr key={report._id}>
                   {isCoordinatorView && (
-                    <td>
+                    <td data-label="שם המנחה">
                       <div>{facilitatorName}</div>
                       <small className="facilitator-email">
                         {facilitatorEmail}
@@ -179,23 +179,23 @@ function ReportList({
                     </td>
                   )}
 
-                  <td className="topic-cell">{report.topic}</td>
+                  <td className="topic-cell" data-label="נושא">{report.topic}</td>
 
-                  <td>{groupName}</td>
+                  <td data-label="קבוצה">{groupName}</td>
 
-                  <td>
+                  <td data-label="תאריך">
                     {new Date(report.meetingDate).toLocaleDateString("he-IL")}
                   </td>
 
-                  <td>{report.participantCount}</td>
+                  <td data-label="משתתפים">{report.participantCount}</td>
 
-                  <td>
+                  <td data-label="סטטוס">
                     <span className={`status-badge ${report.status}`}>
                       {statusLabels[report.status] || report.status}
                     </span>
                   </td>
 
-                  <td>
+                  <td data-label="קבלה">
                     {hasReceipt ? (
                       <button
                         type="button"
@@ -213,13 +213,13 @@ function ReportList({
 
                   {isCoordinatorView && (
                     <>
-                      <td>
+                      <td data-label="סכום לתשלום">
                         {isApproved
                           ? `${Number(report.paymentAmount || 0).toLocaleString("he-IL")} ₪`
                           : "יחושב לאחר אישור"}
                       </td>
 
-                      <td>
+                      <td data-label="מצב תשלום">
                         {!isApproved ? (
                           <span className="no-action">—</span>
                         ) : (
@@ -237,12 +237,12 @@ function ReportList({
 
                   {!isCoordinatorView && (
                     <>
-                      <td className="coordinator-notes-cell">
+                      <td className="coordinator-notes-cell" data-label="הערות רכזת">
                         {report.coordinatorNotes || (
                           <span className="no-action">—</span>
                         )}
                       </td>
-                      <td className="payment-status-cell">
+                      <td className="payment-status-cell" data-label="מצב תשלום">
                         <span
                           className={`status-badge ${
                             isPaid ? "approved" : "pending"
@@ -301,6 +301,8 @@ function ReportList({
 
               <button
                 type="button"
+                className="history-x"
+                aria-label="סגירה"
                 onClick={() => setHistoryReport(null)}
               >
                 ✕

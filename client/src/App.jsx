@@ -1,10 +1,14 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import { navToPath, pathToNav } from './navigation'
 import PreviewModal from './components/PreviewModal'
 import LessonCard from './components/LessonCard'
 import LessonDetails from './components/LessonDetails'
 import HomePage from './components/HomePage'
+import PageShell from './components/ui/PageShell'
+import characterImage from './assets/character.png'
+import './components/LessonsPage.css'
 import ContactPage from './components/ContactPage'
 import ContactManagement from './components/ContactManagement'
 import AuthPage from './components/AuthPage'
@@ -20,6 +24,14 @@ import PaymentManagementPage from './components/PaymentManagementPage'
 import BankDetailsForm from './components/BankDetailsForm'
 
 const API_URL = 'http://localhost:7001/api/lessons'
+
+// כפתורי הסינון לפי מסלול בעמוד המאגר
+const TRACK_FILTERS = [
+  { value: '', label: 'כל המסלולים', className: 'lp-chip-all' },
+  { value: 'ארוך', label: 'מסלול ארוך', className: 'track-long' },
+  { value: 'קצר', label: 'מסלול קצר', className: 'track-short' },
+  { value: 'קיץ', label: 'מסלול קיץ', className: 'track-summer' },
+]
 
 const EMPTY_FORM = {
   title: '',
@@ -137,6 +149,95 @@ function App() {
   const [contentFile, setContentFile] = useState(null)
   const [attachmentFiles, setAttachmentFiles] = useState([])
   const [coordinatorPage, setCoordinatorPage] = useState(null)
+
+  /* ---------- ניתוב: חיבור בין העמוד המוצג לכתובת בדפדפן ---------- */
+
+  // עמודים מיוחדים (מערך בלשונית חדשה, משלוחן, פרטי בנק) לא משתתפים בניתוב
+  const isSpecialPage = Boolean(lessonIdFromUrl || deliveryToken || isBankDetailsPath)
+
+  const navState = {
+    showLogin,
+    showLessonsPage,
+    showContactPage,
+    showReportsPage,
+    coordinatorPage,
+    facilitatorPage,
+  }
+  const currentPath = navToPath(navState, currentUser?.role)
+
+  // מעדכן את כל משתני הניווט בבת אחת
+  function applyNav(nav) {
+    setShowLogin(nav.showLogin)
+    setShowLessonsPage(nav.showLessonsPage)
+    setShowContactPage(nav.showContactPage)
+    setShowReportsPage(nav.showReportsPage)
+    setCoordinatorPage(nav.coordinatorPage)
+    setFacilitatorPage(nav.facilitatorPage)
+  }
+
+  // כשהמצב הראשוני נקבע מהכתובת, מדלגים על סנכרון אחד (כדי לא לדרוס את הכתובת)
+  const skipNextSyncRef = useRef(false)
+
+  // 1. בטעינה: אם נכנסו ישר לכתובת פנימית (או רעננו את הדף) - פותחים את העמוד המתאים
+  useEffect(() => {
+    if (isSpecialPage) return
+
+    const navFromUrl = pathToNav(window.location.pathname, currentUser?.role)
+
+    if (navToPath(navFromUrl, currentUser?.role) !== currentPath) {
+      skipNextSyncRef.current = true
+      applyNav(navFromUrl)
+    }
+    // רץ פעם אחת בטעינה בלבד
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // 2. כל מעבר עמוד באפליקציה -> רשומה חדשה בהיסטוריה של הדפדפן
+  useEffect(() => {
+    if (isSpecialPage) return
+
+    if (skipNextSyncRef.current) {
+      skipNextSyncRef.current = false
+      return
+    }
+
+    const entry = { nav: navState }
+    const fromPath = window.location.pathname
+
+    if (fromPath === currentPath) {
+      // אותה כתובת (למשל אחרי "אחורה") - רק שומרים את המצב, בלי רשומה חדשה
+      window.history.replaceState(entry, '', currentPath + window.location.hash)
+    } else if (fromPath === '/login' && currentPath !== '/login') {
+      // אחרי התחברות: מחליפים את מסך הכניסה, כדי ש"אחורה" לא יחזיר אליו
+      window.history.replaceState(entry, '', currentPath)
+    } else {
+      window.history.pushState(entry, '', currentPath)
+    }
+    // navState מחושב מחדש בכל רינדור; currentPath מספיק כדי לזהות מעבר עמוד
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPath])
+
+  // 3. חיצים של הדפדפן (אחורה / קדימה) -> מחזירים את העמוד ששמור ברשומה
+  useEffect(() => {
+    if (isSpecialPage) return
+
+    function handlePopState(event) {
+      const role = JSON.parse(sessionStorage.getItem('currentUser') || 'null')?.role
+      const savedNav = event.state?.nav
+
+      // רשומה שמורה - אבל רק אם היא עדיין מתאימה להרשאות (למשל אחרי התנתקות)
+      const nav =
+        savedNav && navToPath(savedNav, role) === navToPath(pathToNav(window.location.pathname, role), role)
+          ? savedNav
+          : pathToNav(window.location.pathname, role)
+
+      applyNav(nav)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
 
   useEffect(() => {
@@ -490,19 +591,39 @@ function App() {
 
   // פתיחת מערך שיעור בלשונית חדשה
   if (lessonIdFromUrl) {
-    return (
-      <main className="page" dir="rtl">
-        {detailLoading ? (
-          <p className="status-message">טוען את פרטי מערך השיעור...</p>
-        ) : detailError ? (
-          <p className="status-message error">{detailError}</p>
-        ) : openedLesson ? (
+    if (openedLesson && !detailLoading && !detailError) {
+      return (
+        <main className="app-shell" dir="rtl">
           <LessonDetails
             lesson={openedLesson}
             isCoordinator={isCoordinatorFromUrl}
+            onPreview={openPreview}
           />
+
+          <PreviewModal
+            previewFile={previewFile}
+            previewHtml={previewHtml}
+            previewPdfUrl={previewPdfUrl}
+            previewLoading={previewLoading}
+            previewError={previewError}
+            onClose={closePreview}
+          />
+        </main>
+      )
+    }
+
+    return (
+      <main className="hp ld-status" dir="rtl">
+        <img src={characterImage} alt="" />
+        {detailLoading ? (
+          <p>טוען את פרטי מערך השיעור...</p>
+        ) : detailError ? (
+          <p className="hp-alert hp-alert-error" role="alert">
+            <span aria-hidden="true">!</span>
+            {detailError}
+          </p>
         ) : (
-          <p className="status-message">לא נמצא מערך שיעור.</p>
+          <p>לא נמצא מערך שיעור.</p>
         )}
       </main>
     )
@@ -574,6 +695,7 @@ function App() {
 
       {showLogin ? (
         <AuthPage
+          onBack={() => setShowLogin(false)}
           onLogin={(user) => {
             setCurrentUser(user)
             setShowLogin(false)
@@ -602,6 +724,7 @@ function App() {
         coordinatorPage !== null ? (
         coordinatorPage === 'dashboard' ? (
           <CoordinatorDashboard
+            userName={currentUser?.fullName}
             onNavigate={(page) => {
               if (page === 'lessons') {
                 setCoordinatorPage(null)
@@ -615,97 +738,85 @@ function App() {
           />
 
         ) : coordinatorPage === 'approvals' ? (
-          <section>
-            <button
-              type="button"
-              className="back-home-button"
-              onClick={() => setCoordinatorPage('dashboard')}
-            >
-              ← חזרה ללוח הבקרה
-            </button>
-
+          <PageShell
+            eyebrow="מנחות ופגישות"
+            title="בקשות הרשמה"
+            subtitle="אישור מנחות חדשות שנרשמו עם קוד הרכזת"
+            backLabel="חזרה ללוח הבקרה"
+            onBack={() => setCoordinatorPage('dashboard')}
+          >
             <PendingApprovals
               authToken={sessionStorage.getItem('authToken') || ''}
             />
-          </section>
+          </PageShell>
         ) : coordinatorPage === 'contacts' ? (
-          <section>
-            <button
-              type="button"
-              className="back-home-button"
-              onClick={() => setCoordinatorPage('dashboard')}
-            >
-              ← חזרה ללוח הבקרה
-            </button>
-
+          <PageShell
+            eyebrow="פניות ומשלוחים"
+            title="פניות שהתקבלו"
+            subtitle="הפניות שנשלחו דרך טופס יצירת הקשר באתר"
+            backLabel="חזרה ללוח הבקרה"
+            onBack={() => setCoordinatorPage('dashboard')}
+          >
             <ContactManagement
               authToken={sessionStorage.getItem('authToken') || ''}
             />
-          </section>
+          </PageShell>
         ) : coordinatorPage === 'reports' ? (
-          <section>
-            <button
-              type="button"
-              className="back-home-button"
-              onClick={() => setCoordinatorPage('dashboard')}
-            >
-              ← חזרה ללוח הבקרה
-            </button>
-            <MeetingReportsPage />
-          </section>
+          <MeetingReportsPage
+            backLabel="חזרה ללוח הבקרה"
+            onBack={() => setCoordinatorPage('dashboard')}
+          />
         ) : coordinatorPage === 'payments' ? (
-          <section>
-            <button
-              type="button"
-              className="back-home-button"
-              onClick={() => setCoordinatorPage('dashboard')}
-            >
-              ← חזרה ללוח הבקרה
-            </button>
+          <PageShell
+            eyebrow="כספים והגדרות"
+            title="תשלומים למנחות"
+            subtitle="סיכום התשלומים עבור הפגישות שאושרו"
+            backLabel="חזרה ללוח הבקרה"
+            onBack={() => setCoordinatorPage('dashboard')}
+          >
             <LecturersPaymentsPage />
-          </section>
+          </PageShell>
         ) : coordinatorPage === 'settings' ? (
-          <section>
-            <button
-              type="button"
-              className="back-home-button"
-              onClick={() => setCoordinatorPage('dashboard')}
-            >
-              ← חזרה ללוח הבקרה
-            </button>
-
+          <PageShell
+            eyebrow="כספים והגדרות"
+            title="הגדרות מערכת"
+            subtitle="תעריפים, תקציבים והגדרות משלוח"
+            backLabel="חזרה ללוח הבקרה"
+            onBack={() => setCoordinatorPage('dashboard')}
+          >
             <SystemSettings />
-          </section>
+          </PageShell>
         ) : coordinatorPage === 'delivery' ? (
-          <section>
-            <button
-              type="button"
-              className="back-home-button"
-              onClick={() => setCoordinatorPage('dashboard')}
-            >
-              ← חזרה ללוח הבקרה
-            </button>
-
+          <PageShell
+            eyebrow="פניות ומשלוחים"
+            title="ניהול משלוחים"
+            subtitle="יצירת בקשות משלוח ומעקב אחר ביצוען"
+            backLabel="חזרה ללוח הבקרה"
+            onBack={() => setCoordinatorPage('dashboard')}
+          >
             <DeliveryForm />
-          </section>
+          </PageShell>
         ) : (
-          <section>
-            <button
-              type="button"
-              className="back-home-button"
-              onClick={() => setCoordinatorPage('dashboard')}
-            >
-              ← חזרה ללוח הבקרה
-            </button>
-            <h1>העמוד עדיין בתהליך חיבור</h1>
-            <p>נחבר את העמוד שנבחר בשלב הבא.</p>
-          </section>
+          <PageShell
+            eyebrow="בקרוב"
+            title={coordinatorPage === 'meetings' ? 'קביעת פגישות' : coordinatorPage === 'meetingApprovals' ? 'אישור פגישות' : 'בקרוב'}
+            subtitle="העמוד הזה עדיין בבנייה"
+            backLabel="חזרה ללוח הבקרה"
+            onBack={() => setCoordinatorPage('dashboard')}
+          >
+            <div className="hp-soon">
+              <img src={characterImage} alt="" />
+              <h2>העמוד עדיין בתהליך חיבור</h2>
+              <p>נחבר את העמוד שנבחר בשלב הבא.</p>
+            </div>
+          </PageShell>
 
         )
       ) : currentUser?.role === 'payment_manager' ? (
         <PaymentManagementPage />
       ) : currentUser?.role === 'facilitator' && facilitatorPage === 'menu' ? (
         <FacilitatorDashboard
+          userName={currentUser?.fullName}
           onNavigate={(page) => {
             if (page === 'reports') {
               setFacilitatorPage('reports')
@@ -725,60 +836,45 @@ function App() {
         />
       ) : currentUser?.role === 'facilitator' &&
         facilitatorPage === 'bank-details' ? (
-        <section>
-          <button
-            type="button"
-            className="back-home-button"
-            onClick={() => setFacilitatorPage('menu')}
-          >
-            ← חזרה לתפריט
-          </button>
+        <PageShell
+          eyebrow="הפרטים שלי"
+          title="פרטי חשבון בנק"
+          subtitle="לאן יועברו התשלומים עבור הפגישות"
+          backLabel="חזרה לאזור האישי"
+          onBack={() => setFacilitatorPage('menu')}
+        >
           <BankDetailsForm />
-        </section>
+        </PageShell>
       ) : currentUser?.role === 'facilitator' && facilitatorPage === 'messages' ? (
-        <section>
-          <button
-            type="button"
-            className="back-home-button"
-            onClick={() => setFacilitatorPage('menu')}
-          >
-            ← חזרה לתפריט
-          </button>
-          <h1>הודעות מהרכזת</h1>
-          <p>נחבר לכאן את מערכת ההודעות.</p>
-        </section>
+        <PageShell
+          eyebrow="האזור האישי"
+          title="הודעות מהרכזת"
+          subtitle="עדכונים והודעות מהרכזת"
+          backLabel="חזרה לאזור האישי"
+          onBack={() => setFacilitatorPage('menu')}
+        >
+          <div className="hp-soon">
+            <img src={characterImage} alt="" />
+            <h2>בקרוב כאן</h2>
+            <p>נחבר לכאן את מערכת ההודעות.</p>
+          </div>
+        </PageShell>
       ) : showReportsPage ? (
-        <>
-          <button
-            type="button"
-            className="back-home-button"
-            onClick={() => {
-              setShowReportsPage(false)
-              setFacilitatorPage('menu')
-            }}
-          >
-            ← חזרה לדף הבית
-          </button>
-
-          <MeetingReportsPage
-            initialShowForm={facilitatorPage === 'new-report'}
-          />
-        </>
+        <MeetingReportsPage
+          initialShowForm={facilitatorPage === 'new-report'}
+          backLabel="חזרה לאזור האישי"
+          onBack={() => {
+            setShowReportsPage(false)
+            setFacilitatorPage('menu')
+          }}
+        />
       ) : showContactPage ? (
-        <>
-          <button
-            type="button"
-            className="back-home-button"
-            onClick={() => {
-              setShowContactPage(false)
-              setShowLessonsPage(false)
-            }}
-          >
-            ← חזרה לדף הבית
-          </button>
-
-          <ContactPage />
-        </>
+        <ContactPage
+          onBack={() => {
+            setShowContactPage(false)
+            setShowLessonsPage(false)
+          }}
+        />
       ) : !showLessonsPage ? (
         <>
           <HomePage
@@ -802,10 +898,10 @@ function App() {
           />
 
           {currentUser?.role === 'facilitator' && (
-            <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div className="hp hp-home-shortcut">
               <button
                 type="button"
-                className="back-home-button"
+                className="hp-btn hp-btn-purple"
                 onClick={() => {
                   setShowContactPage(false)
                   setShowLessonsPage(false)
@@ -819,31 +915,38 @@ function App() {
           )}
         </>
       ) : (
-        <>
-          <button
-            type="button"
-            className="back-home-button"
-            onClick={() => {
-              setShowLessonsPage(false)
-              setShowContactPage(false)
-              setShowReportsPage(false)
+        <PageShell
+          className="lp"
+          eyebrow={showCoordinatorView ? 'ניהול המאגר' : 'המאגר שלנו'}
+          title="מאגר מערכי השיעור"
+          subtitle="חיפוש, צפייה ושיתוף ידע בין מנחים"
+          backLabel={
+            showCoordinatorView
+              ? 'חזרה ללוח הבקרה'
+              : currentUser?.role === 'facilitator'
+                ? 'חזרה לאזור האישי'
+                : 'חזרה לדף הבית'
+          }
+          onBack={() => {
+            setShowLessonsPage(false)
+            setShowContactPage(false)
+            setShowReportsPage(false)
 
-              if (showCoordinatorView) {
-                setCoordinatorPage('dashboard')
-              }
-            }}
-          >
-            {showCoordinatorView ? '← חזרה ללוח הבקרה' : '← חזרה לדף הבית'}
-          </button>
-
-          <header className="lessons-header">
-            <h1>מאגר מערכי השיעור</h1>
-            <p>חיפוש, צפייה ושיתוף ידע בין מנחים</p>
-          </header>
-
-          <section className="lesson-filters" aria-label="חיפוש וסינון שיעורים">
-            <label>
-              חיפוש מערך שיעור
+            if (showCoordinatorView) {
+              setCoordinatorPage('dashboard')
+            } else if (currentUser?.role === 'facilitator') {
+              setFacilitatorPage('menu')
+            }
+          }}
+        >
+          {/* ---------- חיפוש וסינון ---------- */}
+          <section className="lp-filters" aria-label="חיפוש וסינון שיעורים">
+            <label className="lp-search">
+              <span className="lp-visually-hidden">חיפוש מערך שיעור</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20l-4-4" />
+              </svg>
               <input
                 type="search"
                 value={search}
@@ -852,63 +955,53 @@ function App() {
               />
             </label>
 
-            <label>
-              סינון לפי מסלול
-              <select
-                value={track}
-                onChange={(event) => setTrack(event.target.value)}
-              >
-                <option value="">כל המסלולים</option>
-                <option value="פיתוח">פיתוח</option>
-                <option value="ארוך">מסלול ארוך</option>
-                <option value="קצר">מסלול קצר</option>
-                <option value="קיץ">מסלול קיץ</option>
-              </select>
-            </label>
-          </section>
-
-          <section className="admin-section">
-            <div className="admin-toolbar">
-
-
-              {showCoordinatorView && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (showAdminForm) {
-                        resetLessonForm()
-                      } else {
-                        setEditingLessonId(null)
-                        setFormData(EMPTY_FORM)
-                        setContentFile(null)
-                        setAttachmentFiles([])
-                        setSaveMessage('')
-                        setSaveError('')
-                        setShowAdminForm(true)
-                      }
-                    }}
-                  >
-                    {showAdminForm ? 'ביטול הטופס' : '＋ הוספת מערך שיעור'}
-                  </button>
-
-
-                </>
-              )}
+            <div className="lp-chips" role="group" aria-label="סינון לפי מסלול">
+              {TRACK_FILTERS.map((option) => (
+                <button
+                  key={option.value || 'all'}
+                  type="button"
+                  className={`lp-chip ${option.className} ${track === option.value ? 'is-active' : ''}`}
+                  aria-pressed={track === option.value}
+                  onClick={() => setTrack(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
 
+            {showCoordinatorView && (
+              <button
+                type="button"
+                className={`hp-btn ${showAdminForm ? 'hp-btn-outline' : 'hp-btn-mint'} lp-add`}
+                onClick={() => {
+                  if (showAdminForm) {
+                    resetLessonForm()
+                  } else {
+                    setEditingLessonId(null)
+                    setFormData(EMPTY_FORM)
+                    setContentFile(null)
+                    setAttachmentFiles([])
+                    setSaveMessage('')
+                    setSaveError('')
+                    setShowAdminForm(true)
+                  }
+                }}
+              >
+                {showAdminForm ? 'ביטול הטופס' : '＋ הוספת מערך שיעור'}
+              </button>
+            )}
+          </section>
 
+          {/* ---------- טופס הוספה / עריכה (רכזת) ---------- */}
+          {showCoordinatorView && showAdminForm && (
+            <form className="lp-form" onSubmit={handleSaveLesson}>
+              <h2>
+                {editingLessonId ? 'עריכת מערך שיעור' : 'הוספת מערך שיעור חדש'}
+              </h2>
 
-            {showCoordinatorView && showAdminForm && (
-              <form className="lesson-form" onSubmit={handleSaveLesson}>
-                <h2>
-                  {editingLessonId
-                    ? 'עריכת מערך שיעור'
-                    : 'הוספת מערך שיעור חדש'}
-                </h2>
-
-                <label>
-                  שם מערך השיעור *
+              <div className="lp-form-grid">
+                <label className="lp-field lp-field-wide">
+                  <span>שם מערך השיעור *</span>
                   <input
                     name="title"
                     value={formData.title}
@@ -918,8 +1011,23 @@ function App() {
                   />
                 </label>
 
-                <label>
-                  תיאור קצר
+                <label className="lp-field">
+                  <span>מסלול *</span>
+                  <select
+                    name="track"
+                    value={formData.track}
+                    onChange={handleFormChange}
+                    required
+                  >
+                    <option value="">בחירת מסלול</option>
+                    <option value="ארוך">ארוך</option>
+                    <option value="קצר">קצר</option>
+                    <option value="קיץ">קיץ</option>
+                  </select>
+                </label>
+
+                <label className="lp-field">
+                  <span>תיאור קצר</span>
                   <textarea
                     name="description"
                     value={formData.description}
@@ -928,24 +1036,8 @@ function App() {
                   />
                 </label>
 
-                <label>
-                  מסלול *
-                  <select
-                    name="track"
-                    value={formData.track}
-                    onChange={handleFormChange}
-                    required
-                  >
-                    <option value="">בחירת מסלול</option>
-                    <option value="פיתוח">פיתוח</option>
-                    <option value="ארוך">ארוך</option>
-                    <option value="קצר">קצר</option>
-                    <option value="קיץ">קיץ</option>
-                  </select>
-                </label>
-
-                <label>
-                  תוכן השיעור
+                <label className="lp-field lp-field-wide">
+                  <span>תוכן השיעור</span>
                   <textarea
                     name="content"
                     value={formData.content}
@@ -955,8 +1047,8 @@ function App() {
                   />
                 </label>
 
-                <label>
-                  הערות למנחה
+                <label className="lp-field lp-field-wide">
+                  <span>הערות למנחה</span>
                   <textarea
                     name="notes"
                     value={formData.notes}
@@ -965,8 +1057,8 @@ function App() {
                   />
                 </label>
 
-                <label>
-                  קובץ תוכן השיעור (לא חובה)
+                <label className="lp-field lp-file">
+                  <span>קובץ תוכן השיעור (לא חובה)</span>
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx,.txt"
@@ -976,78 +1068,99 @@ function App() {
                   />
                 </label>
 
-                <label>
-                  קבצים מצורפים (אפשר לבחור כמה)
+                <label className="lp-field lp-file">
+                  <span>קבצים מצורפים (אפשר לבחור כמה)</span>
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx,.txt"
                     multiple
                     onChange={(event) =>
-                      setAttachmentFiles(
-                        Array.from(event.target.files || [])
-                      )
+                      setAttachmentFiles(Array.from(event.target.files || []))
                     }
                   />
                 </label>
+              </div>
 
-                {saveError && (
-                  <p className="status-message error">{saveError}</p>
-                )}
+              {saveError && (
+                <p className="hp-alert hp-alert-error" role="alert">
+                  <span aria-hidden="true">!</span>
+                  {saveError}
+                </p>
+              )}
 
-                {saveMessage && (
-                  <p className="status-message">{saveMessage}</p>
-                )}
+              {saveMessage && (
+                <p className="hp-alert hp-alert-success" role="status">
+                  <span aria-hidden="true">✓</span>
+                  {saveMessage}
+                </p>
+              )}
 
-                <div className="lesson-form-actions">
-                  <button type="submit" disabled={saving}>
-                    {saving
-                      ? 'שומר...'
-                      : editingLessonId
-                        ? 'שמירת שינויים'
-                        : 'שמירת מערך השיעור'}
-                  </button>
+              <div className="lp-form-actions">
+                <button type="submit" className="hp-btn hp-btn-purple" disabled={saving}>
+                  {saving
+                    ? 'שומר...'
+                    : editingLessonId
+                      ? 'שמירת שינויים'
+                      : 'שמירת מערך השיעור'}
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={resetLessonForm}
-                    disabled={saving}
-                  >
-                    ביטול
-                  </button>
-                </div>
-              </form>
-            )}
+                <button
+                  type="button"
+                  className="hp-btn hp-btn-outline"
+                  onClick={resetLessonForm}
+                  disabled={saving}
+                >
+                  ביטול
+                </button>
+              </div>
+            </form>
+          )}
 
-            {!showAdminForm && saveMessage && (
-              <p className="status-message">{saveMessage}</p>
-            )}
-          </section>
+          {!showAdminForm && saveMessage && (
+            <p className="hp-alert hp-alert-success" role="status">
+              <span aria-hidden="true">✓</span>
+              {saveMessage}
+            </p>
+          )}
 
+          {/* ---------- רשימת המערכים ---------- */}
           {loading ? (
-            <p className="status-message">טוען מערכי שיעור...</p>
+            <p className="lp-state">טוען מערכי שיעור...</p>
           ) : error ? (
-            <p className="status-message error">{error}</p>
+            <p className="hp-alert hp-alert-error" role="alert">
+              <span aria-hidden="true">!</span>
+              {error}
+            </p>
           ) : lessons.length === 0 ? (
-            <p className="status-message">לא נמצאו מערכי שיעור מתאימים.</p>
+            <div className="lp-empty">
+              <img src={characterImage} alt="" />
+              <p>לא נמצאו מערכי שיעור מתאימים.</p>
+            </div>
           ) : (
-            <section className="lessons-grid" aria-label="מערכי שיעור">
-              {lessons.map((lesson) => (
-                <LessonCard
-                  key={lesson._id}
-                  lesson={lesson}
-                  onPreview={openPreview}
-                  onHide={hideLesson}
-                  onShow={showLesson}
-                  onDelete={deleteLesson}
-                  onEdit={startEditLesson}
-                  showManagementButtons={showCoordinatorView}
-                  facilitators={facilitators}
-                  onOpenAccess={openLessonAccess}
-                  onCloseAccess={closeLessonAccess}
-                  accessLoading={accessLoading}
-                />
-              ))}
-            </section>
+            <>
+              <p className="lp-count">
+                {lessons.length === 1 ? 'נמצא מערך אחד' : `נמצאו ${lessons.length} מערכים`}
+              </p>
+
+              <section className="lp-grid" aria-label="מערכי שיעור">
+                {lessons.map((lesson) => (
+                  <LessonCard
+                    key={lesson._id}
+                    lesson={lesson}
+                    onPreview={openPreview}
+                    onHide={hideLesson}
+                    onShow={showLesson}
+                    onDelete={deleteLesson}
+                    onEdit={startEditLesson}
+                    showManagementButtons={showCoordinatorView}
+                    facilitators={facilitators}
+                    onOpenAccess={openLessonAccess}
+                    onCloseAccess={closeLessonAccess}
+                    accessLoading={accessLoading}
+                  />
+                ))}
+              </section>
+            </>
           )}
 
           <PreviewModal
@@ -1058,7 +1171,7 @@ function App() {
             previewError={previewError}
             onClose={closePreview}
           />
-        </>
+        </PageShell>
       )}
     </main>
   )

@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { getAllLecturersPayments } from "../services/meetingReportService";
+import "./AdminPages.css";
 
 function LecturersPaymentsPage() {
   const [lecturersPayments, setLecturersPayments] = useState([]);
@@ -33,71 +34,101 @@ function LecturersPaymentsPage() {
     0
   );
 
-  return (
-    <main className="lecturers-payments-page" dir="rtl">
-      <h1>תשלומים למנחות</h1>
-      <p>סיכום התשלומים עבור הפגישות שאושרו</p>
+  const levelLabels = {
+    young: "מנחה צעירה",
+    senior: "מנחה בוגרת",
+  };
 
+  const totalMeetings = lecturersPayments.reduce(
+    (sum, payment) => sum + (payment.approvedMeetingsCount || 0),
+    0
+  );
+
+  return (
+    <div className="adm lpay">
       {loading ? (
-        <p>טוענת נתוני תשלום...</p>
+        <p className="adm-state">טוענת נתוני תשלום...</p>
       ) : error ? (
-        <p className="error-message">{error}</p>
+        <p className="hp-alert hp-alert-error" role="alert">
+          <span aria-hidden="true">!</span>
+          {error}
+        </p>
       ) : (
         <>
-          <section className="total-payment-box">
-            <span>סה"כ לתשלום לכל המנחות</span>
-            <strong>
-              {totalPayments.toLocaleString("he-IL")} ₪
-            </strong>
+          <section className="adm-summary">
+            <div className="adm-summary-main">
+              <span>סה"כ לתשלום לכל המנחות</span>
+              <strong>{totalPayments.toLocaleString("he-IL")} ₪</strong>
+            </div>
+
+            <div className="adm-summary-item">
+              <strong>{lecturersPayments.length}</strong>
+              <span>מנחות</span>
+            </div>
+
+            <div className="adm-summary-item">
+              <strong>{totalMeetings}</strong>
+              <span>פגישות שאושרו</span>
+            </div>
           </section>
 
           {lecturersPayments.length === 0 ? (
-            <p>לא נמצאו נתוני תשלום.</p>
+            <p className="adm-state">לא נמצאו נתוני תשלום.</p>
           ) : (
-            <section className="lecturers-payments-list">
-              {lecturersPayments.map((payment) => (
-                <article
-                  className="lecturer-payment-row"
-                  key={payment.lecturerId}
-                >
-                  <h2>
-                    {payment.lecturerName || payment.email}
-                  </h2>
+            <section className="adm-card">
+              <h2 className="adm-card-title">פירוט לפי מנחה</h2>
 
-                  <p>
-                    <strong>סוג מנחה:</strong>{" "}
-                    {payment.facilitatorLevel === "young"
-                      ? "מנחה צעירה"
-                      : payment.facilitatorLevel === "senior"
-                      ? "מנחה בוגרת"
-                      : "לא הוגדר"}
-                  </p>
+              <div className="lpay-list">
+                {lecturersPayments.map((payment) => {
+                  const name = payment.lecturerName || payment.email || "";
 
-                  <p>
-                    <strong>תעריף לפגישה:</strong>{" "}
-                    {payment.paymentPerMeeting !== null
-                      ? `${payment.paymentPerMeeting} ₪`
-                      : "לא הוגדר"}
-                  </p>
+                  return (
+                    <article className="lpay-row" key={payment.lecturerId}>
+                      <div className="lpay-person">
+                        <span className="adm-avatar" aria-hidden="true">
+                          {name.trim()[0] || "?"}
+                        </span>
+                        <div>
+                          <h3>{name}</h3>
+                          <span className={`adm-tag adm-tag-${payment.facilitatorLevel || "none"}`}>
+                            {levelLabels[payment.facilitatorLevel] || "לא הוגדר"}
+                          </span>
+                        </div>
+                      </div>
 
-                  <p>
-                    <strong>מספר פגישות שאושרו:</strong>{" "}
-                    {payment.approvedMeetingsCount}
-                  </p>
+                      <dl className="lpay-numbers">
+                        <div>
+                          <dt>תעריף לפגישה</dt>
+                          <dd>
+                            {payment.paymentPerMeeting !== null
+                              ? `${Number(payment.paymentPerMeeting).toLocaleString("he-IL")} ₪`
+                              : "לא הוגדר"}
+                          </dd>
+                        </div>
 
-                  <p>
-                    <strong>סה"כ לתשלום:</strong>{" "}
-                    {payment.totalPayment !== null
-                      ? `${payment.totalPayment.toLocaleString("he-IL")} ₪`
-                      : "לא ניתן לחשב"}
-                  </p>
-                </article>
-              ))}
+                        <div>
+                          <dt>פגישות שאושרו</dt>
+                          <dd>{payment.approvedMeetingsCount}</dd>
+                        </div>
+
+                        <div className="lpay-total">
+                          <dt>סה"כ לתשלום</dt>
+                          <dd>
+                            {payment.totalPayment !== null
+                              ? `${payment.totalPayment.toLocaleString("he-IL")} ₪`
+                              : "לא ניתן לחשב"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </article>
+                  );
+                })}
+              </div>
             </section>
           )}
         </>
       )}
-    </main>
+    </div>
   );
 }
 

@@ -127,156 +127,193 @@ function ReportForm({
   }
 
   return (
-    <form className="report-form" onSubmit={handleSubmit}>
+    <form className="report-form rf" onSubmit={handleSubmit}>
       <h2>
         {isEditing ? "עריכת דיווח פגישה" : "דיווח על פגישה"}
       </h2>
 
-      <label>בית ספר</label>
-      <select
-        name="schoolName"
-        value={formData.schoolName}
-        onChange={(event) =>
-          setFormData((prev) => ({
-            ...prev,
-            schoolName: event.target.value,
-            className: "",
-            groupNumber: "",
-          }))
-        }
-        required
-      >
-        <option value="">בחרי בית ספר</option>
-        {schools.map((school) => (
-          <option key={school} value={school}>
-            {school}
-          </option>
-        ))}
-      </select>
+      <fieldset className="rf-group">
+        <legend>איפה התקיימה הפגישה?</legend>
 
-      <label>כיתה</label>
-      <select
-        name="className"
-        value={formData.className}
-        onChange={(event) =>
-          setFormData((prev) => ({
-            ...prev,
-            className: event.target.value,
-            groupNumber: "",
-          }))
-        }
-        disabled={!formData.schoolName}
-        required
-      >
-        <option value="">בחרי כיתה</option>
-        {classes.map((className) => (
-          <option key={className} value={className}>
-            {className}
-          </option>
-        ))}
-      </select>
+        <div className="rf-grid rf-grid-3">
+          <label className="rf-field rf-span-2">
+            <span>בית ספר</span>
+            <select
+              name="schoolName"
+              value={formData.schoolName}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  schoolName: event.target.value,
+                  className: "",
+                  groupNumber: "",
+                }))
+              }
+              required
+            >
+              <option value="">בחרי בית ספר</option>
+              {schools.map((school) => (
+                <option key={school} value={school}>
+                  {school}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <label>קבוצה</label>
-      <select
-        name="groupNumber"
-        value={formData.groupNumber}
-        onChange={handleChange}
-        disabled={!formData.className}
-        required
-      >
-        <option value="">בחרי קבוצה</option>
-        {groupNumbers.map((number) => (
-          <option key={number} value={number}>
-            קבוצה {number}
-          </option>
-        ))}
-      </select>
+          <label className="rf-field">
+            <span>כיתה</span>
+            <select
+              name="className"
+              value={formData.className}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  className: event.target.value,
+                  groupNumber: "",
+                }))
+              }
+              disabled={!formData.schoolName}
+              required
+            >
+              <option value="">בחרי כיתה</option>
+              {classes.map((className) => (
+                <option key={className} value={className}>
+                  {className}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <label>תאריך הפגישה</label>
-      <input
-        type="datetime-local"
-        name="meetingDate"
-        value={formData.meetingDate}
-        onChange={handleChange}
-        required
-      />
+          <label className="rf-field">
+            <span>קבוצה</span>
+            <select
+              name="groupNumber"
+              value={formData.groupNumber}
+              onChange={handleChange}
+              disabled={!formData.className}
+              required
+            >
+              <option value="">בחרי קבוצה</option>
+              {groupNumbers.map((number) => (
+                <option key={number} value={number}>
+                  קבוצה {number}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <label>נושא הפגישה</label>
-      <input
-        type="text"
-        name="topic"
-        value={formData.topic}
-        onChange={handleChange}
-        required
-      />
+          <label className="rf-field rf-span-2">
+            <span>מקום הפגישה</span>
+            <select
+              name="meetingLocation"
+              value={formData.meetingLocation}
+              onChange={handleChange}
+              required
+            >
+              <option value="">בחרי מקום פגישה</option>
+              <option value="facilitator_home">בבית המנחה</option>
+              <option value="organization_venue">מקום מטעם הארגון</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
 
-      <label>מספר משתתפים</label>
-      <input
-        type="number"
-        name="participantCount"
-        min="0"
-        value={formData.participantCount}
-        onChange={handleChange}
-        required
-      />
+      <fieldset className="rf-group">
+        <legend>על הפגישה</legend>
 
-      <label>מקום הפגישה</label>
-      <select
-        name="meetingLocation"
-        value={formData.meetingLocation}
-        onChange={handleChange}
-        required
-      >
-        <option value="">בחרי מקום פגישה</option>
-        <option value="facilitator_home">בבית המנחה</option>
-        <option value="organization_venue">מקום מטעם הארגון</option>
-      </select>
+        <div className="rf-grid rf-grid-3">
+          <label className="rf-field rf-span-2">
+            <span>נושא הפגישה</span>
+            <input
+              type="text"
+              name="topic"
+              value={formData.topic}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-      {isSenior && (
-        <label>
-          <input
-            type="checkbox"
-            name="prolongedConversation"
-            checked={formData.prolongedConversation}
-            onChange={handleChange}
-          />
-          התקיימה שיחה ממושכת עם משתתפת
-        </label>
-      )}
+          <label className="rf-field">
+            <span>תאריך ושעה</span>
+            <input
+              type="datetime-local"
+              name="meetingDate"
+              value={formData.meetingDate}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-      <label>עלות כיבוד (₪)</label>
-      <input
-        type="number"
-        name="refreshmentsCost"
-        min="0"
-        value={formData.refreshmentsCost}
-        onChange={handleChange}
-        required
-      />
+          <label className="rf-field">
+            <span>מספר משתתפים</span>
+            <input
+              type="number"
+              name="participantCount"
+              min="0"
+              value={formData.participantCount}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-      <label>העלאת קבלה</label>
-      <input
-        type="file"
-        accept=".jpg,.jpeg,.png,.pdf"
-        onChange={handleReceiptChange}
-      />
+          {isSenior && (
+            <label className="rf-check rf-span-2">
+              <input
+                type="checkbox"
+                name="prolongedConversation"
+                checked={formData.prolongedConversation}
+                onChange={handleChange}
+              />
+              <span>התקיימה שיחה ממושכת עם משתתפת</span>
+            </label>
+          )}
+        </div>
+      </fieldset>
 
-      {receipt && <p>נבחר קובץ חדש: {receipt.name}</p>}
+      <fieldset className="rf-group">
+        <legend>כיבוד וקבלה</legend>
 
-      {isEditing && !receipt && initialData.receipt?.fileName && (
-        <p>
-          קבלה קיימת: {initialData.receipt.fileName}
-          (השאר ללא שינוי כדי לשמור אותה)
-        </p>
-      )}
+        <div className="rf-grid rf-grid-3">
+          <label className="rf-field">
+            <span>עלות כיבוד (₪)</span>
+            <input
+              type="number"
+              name="refreshmentsCost"
+              min="0"
+              value={formData.refreshmentsCost}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-      <button type="submit">
-        {isEditing ? "שמירת שינויים" : "שליחת דיווח"}
-      </button>
+          <label className="rf-field rf-file rf-span-2">
+            <span>העלאת קבלה {Number(formData.refreshmentsCost) > 0 && <em>(חובה כשיש הוצאות כיבוד)</em>}</span>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.pdf"
+              onChange={handleReceiptChange}
+            />
+          </label>
+        </div>
 
-      <button type="button" onClick={onCancel}>
-        ביטול
-      </button>
+        {receipt && <p className="rf-note">נבחר קובץ חדש: {receipt.name}</p>}
+
+        {isEditing && !receipt && initialData.receipt?.fileName && (
+          <p className="rf-note">
+            קבלה קיימת: {initialData.receipt.fileName} (השאירי ללא שינוי כדי לשמור אותה)
+          </p>
+        )}
+      </fieldset>
+
+      <div className="rf-actions">
+        <button type="submit" className="hp-btn hp-btn-purple">
+          {isEditing ? "שמירת שינויים" : "שליחת דיווח"}
+        </button>
+
+        <button type="button" className="hp-btn hp-btn-outline" onClick={onCancel}>
+          ביטול
+        </button>
+      </div>
     </form>
   );
 }

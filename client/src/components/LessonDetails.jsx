@@ -1,108 +1,140 @@
-
 import Comments from './Comments'
+import PageShell from './ui/PageShell'
+import { BookIcon, CalendarIcon, SunIcon, Spark } from './ui/Decor'
+import './LessonDetails.css'
 
-function LessonDetails({ lesson, onPreview, isCoordinator = false }) {
+const FILES_BASE_URL = 'http://localhost:7001'
+
+const TRACK_STYLES = {
+  'ארוך': { className: 'track-long', label: 'מסלול ארוך', Icon: BookIcon },
+  'קצר': { className: 'track-short', label: 'מסלול קצר', Icon: CalendarIcon },
+  'קיץ': { className: 'track-summer', label: 'מסלול קיץ', Icon: SunIcon },
+}
+
+function FileIcon() {
   return (
-    <section className="lesson-details-page" dir="rtl">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5M9 13h6M9 17h4" />
+    </svg>
+  )
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+    </svg>
+  )
+}
+
+// שורת קובץ: לחיצה על השם פותחת תצוגה מקדימה, והחץ מוריד את הקובץ
+function FileRow({ file, label, onPreview }) {
+  return (
+    <div className="ld-file">
+      <span className="ld-file-icon"><FileIcon /></span>
+
       <button
         type="button"
-        className="back-home-button"
-        onClick={() => window.close()}
+        className="ld-file-name"
+        onClick={() => onPreview?.(file)}
       >
-        סגירת הלשונית
+        {label || file.name}
       </button>
 
-      <article className="lesson-details-card">
-        <span className="track-label">
-          {lesson.track || 'ללא מסלול'}
+      <a
+        className="ld-file-download"
+        href={`${FILES_BASE_URL}${file.url}`}
+        download={file.name}
+        title="הורדת הקובץ"
+        aria-label={`הורדת ${file.name || 'הקובץ'}`}
+      >
+        <DownloadIcon />
+      </a>
+    </div>
+  )
+}
+
+function LessonDetails({ lesson, onPreview, isCoordinator = false }) {
+  const trackStyle = TRACK_STYLES[lesson.track] || {
+    className: 'track-none',
+    label: lesson.track || 'ללא מסלול',
+    Icon: BookIcon,
+  }
+  const { Icon } = trackStyle
+
+  const hasFiles = lesson.contentFile?.url || lesson.files?.length > 0
+
+  return (
+    <PageShell
+      className={`ld ${trackStyle.className}`}
+      eyebrow={
+        <span className="ld-eyebrow">
+          <Icon />
+          {trackStyle.label}
         </span>
+      }
+      title={lesson.title}
+      subtitle={lesson.description}
+      onBack={() => window.close()}
+      backLabel="סגירת הלשונית"
+    >
+      <div className={`ld-layout ${hasFiles ? '' : 'ld-layout-single'}`}>
+        <article className="ld-main">
+          {lesson.content ? (
+            <section className="ld-section">
+              <h2>תוכן השיעור</h2>
+              <div className="ld-content">{lesson.content}</div>
+            </section>
+          ) : (
+            <section className="ld-section">
+              <h2>תוכן השיעור</h2>
+              <p className="ld-muted">
+                {hasFiles
+                  ? 'תוכן השיעור נמצא בקבצים המצורפים.'
+                  : 'עדיין לא נוסף תוכן למערך הזה.'}
+              </p>
+            </section>
+          )}
 
-        <h1>{lesson.title}</h1>
+          {lesson.notes && (
+            <section className="ld-note">
+              <Spark className="ld-note-spark" />
+              <h2>הערות למנחה</h2>
+              <p>{lesson.notes}</p>
+            </section>
+          )}
+        </article>
 
-        {lesson.description && (
-          <section className="lesson-detail-section">
-            <h2>תיאור המערך</h2>
-            <p>{lesson.description}</p>
-          </section>
+        {hasFiles && (
+          <aside className="ld-side">
+            {lesson.contentFile?.url && (
+              <section className="ld-files">
+                <h2>קובץ תוכן השיעור</h2>
+                <FileRow
+                  file={lesson.contentFile}
+                  label={lesson.contentFile.name || 'פתיחת קובץ התוכן'}
+                  onPreview={onPreview}
+                />
+              </section>
+            )}
+
+            {lesson.files?.length > 0 && (
+              <section className="ld-files">
+                <h2>קבצים מצורפים</h2>
+                {lesson.files.map((file) => (
+                  <FileRow key={file._id || file.url} file={file} onPreview={onPreview} />
+                ))}
+              </section>
+            )}
+          </aside>
         )}
+      </div>
 
-        {lesson.content && (
-          <section className="lesson-detail-section">
-            <h2>תוכן השיעור</h2>
-            <div className="lesson-full-content">
-              {lesson.content}
-            </div>
-          </section>
-        )}
-
-        {lesson.notes && (
-          <section className="lesson-detail-section">
-            <h2>הערות למנחה</h2>
-            <p>{lesson.notes}</p>
-          </section>
-        )}
-
-        {lesson.contentFile?.url && (
-          <section className="lesson-detail-section">
-            <h2>קובץ תוכן השיעור</h2>
-
-            <div className="file-item">
-              <button
-                type="button"
-                className="file-name-button"
-                onClick={() => onPreview(lesson.contentFile)}
-              >
-                {lesson.contentFile.name || 'פתיחת קובץ התוכן'}
-              </button>
-
-              <a
-                className="download-link"
-                href={`http://localhost:7001${lesson.contentFile.url}`}
-                download={lesson.contentFile.name}
-                title="הורדת הקובץ"
-                aria-label="הורדת קובץ תוכן השיעור"
-              >
-                ↓
-              </a>
-            </div>
-          </section>
-        )}
-
-        {lesson.files?.length > 0 && (
-          <section className="lesson-detail-section files-section">
-            <h2>קבצים מצורפים</h2>
-
-            {lesson.files.map((file) => (
-              <div className="file-item" key={file._id || file.url}>
-                <button
-                  type="button"
-                  className="file-name-button"
-                  onClick={() => onPreview(file)}
-                >
-                  {file.name}
-                </button>
-
-                <a
-                  className="download-link"
-                  href={`http://localhost:7001${file.url}`}
-                  download={file.name}
-                  title="הורדת הקובץ"
-                  aria-label={`הורדת ${file.name}`}
-                >
-                  ↓
-                </a>
-              </div>
-            ))}
-          </section>
-        )}
-
-        <section className="lesson-detail-section">
-          <Comments
-            lessonId={lesson._id}
-            showManagementButtons={isCoordinator}
-          />        </section>
-      </article>
-    </section>
+      <section className="ld-comments">
+        <Comments lessonId={lesson._id} showManagementButtons={isCoordinator} />
+      </section>
+    </PageShell>
   )
 }
 

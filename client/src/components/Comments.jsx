@@ -141,6 +141,9 @@ function Comments({ lessonId, showManagementButtons = false }) {
         return (
             <article className="comment" key={comment._id}>
                 <div className="comment-message">
+                    <span className="comment-avatar" aria-hidden="true">
+                        {comment.author?.trim()?.[0] || '?'}
+                    </span>
                     <strong>{comment.author}</strong>
                     <p>{comment.text}</p>
                     <small>
@@ -148,35 +151,39 @@ function Comments({ lessonId, showManagementButtons = false }) {
                     </small>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={() => {
-                        setReplyTo(replyTo === comment._id ? null : comment._id)
-                        setReplyText('')
-                        setError('')
-                    }}
-                >
-                    {replyTo === comment._id ? 'ביטול תשובה' : 'השיבי לתגובה'}
-                </button>
+                <div className="comment-tools">
+                    <button
+                        type="button"
+                        className="comment-tool"
+                        onClick={() => {
+                            setReplyTo(replyTo === comment._id ? null : comment._id)
+                            setReplyText('')
+                            setError('')
+                        }}
+                    >
+                        {replyTo === comment._id ? 'ביטול תשובה' : 'השיבי לתגובה'}
+                    </button>
 
-                
-                {showManagementButtons && (
-                    comment.isVisible === false ? (
-                        <button
-                            type="button"
-                            onClick={() => showComment(comment._id)}
-                        >
-                            הצגת התגובה
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={() => hideComment(comment._id)}
-                        >
-                            🔒 הסתרת התגובה
-                        </button>
-                    )
-                )}
+                    {showManagementButtons && (
+                        comment.isVisible === false ? (
+                            <button
+                                type="button"
+                                className="comment-tool"
+                                onClick={() => showComment(comment._id)}
+                            >
+                                הצגת התגובה
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                className="comment-tool"
+                                onClick={() => hideComment(comment._id)}
+                            >
+                                הסתרת התגובה
+                            </button>
+                        )
+                    )}
+                </div>
 
 
                 {replyTo === comment._id && (
@@ -203,7 +210,7 @@ function Comments({ lessonId, showManagementButtons = false }) {
                             />
                         </label>
 
-                        <button type="submit" disabled={saving}>
+                        <button type="submit" className="hp-btn hp-btn-purple hp-btn-sm" disabled={saving}>
                             {saving ? 'שומר...' : 'שליחת תשובה'}
                         </button>
                     </form>
@@ -245,11 +252,15 @@ function Comments({ lessonId, showManagementButtons = false }) {
 
     return (
         <section className="comments-section" dir="rtl">
-            <h3>תגובות ושיתוף ידע</h3>
+            <h3>
+                תגובות ושיתוף ידע
+                <span className="comments-count">{comments.length}</span>
+            </h3>
 
             <div className="comments-actions">
                 <button
                     type="button"
+                    className={`hp-btn hp-btn-sm ${showNewComment ? 'hp-btn-outline' : 'hp-btn-mint'}`}
                     onClick={() => {
                         setShowNewComment(!showNewComment)
                         setError('')
@@ -260,6 +271,7 @@ function Comments({ lessonId, showManagementButtons = false }) {
 
                 <button
                     type="button"
+                    className="hp-btn hp-btn-sm hp-btn-outline"
                     onClick={() => setShowComments(!showComments)}
                 >
                     {showComments
@@ -269,7 +281,10 @@ function Comments({ lessonId, showManagementButtons = false }) {
             </div>
 
             {error && (
-                <p className="status-message error">{error}</p>
+                <p className="hp-alert hp-alert-error" role="alert">
+                    <span aria-hidden="true">!</span>
+                    {error}
+                </p>
             )}
 
             {showNewComment && (
@@ -298,7 +313,7 @@ function Comments({ lessonId, showManagementButtons = false }) {
                         />
                     </label>
 
-                    <button type="submit" disabled={saving}>
+                    <button type="submit" className="hp-btn hp-btn-purple hp-btn-sm" disabled={saving}>
                         {saving ? 'שומר...' : 'שליחת תגובה'}
                     </button>
                 </form>
@@ -307,9 +322,9 @@ function Comments({ lessonId, showManagementButtons = false }) {
             {showComments && (
                 <div className="comments-conversation">
                     {loading ? (
-                        <p>טוען תגובות...</p>
+                        <p className="comments-empty">טוען תגובות...</p>
                     ) : topLevelComments.length === 0 ? (
-                        <p>עדיין אין תגובות לשיעור הזה.</p>
+                        <p className="comments-empty">עדיין אין תגובות לשיעור הזה. אפשר להיות הראשונה!</p>
                     ) : (
                         topLevelComments.map(comment => renderComment(comment))
                     )}

@@ -1,8 +1,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import "./DeliveryForm.css";
+import "./AdminPages.css";
 
 const API_URL = "http://localhost:7001/api/deliveries";
+
+// סדר השלבים - לפס ההתקדמות של כל משלוח
+const STATUS_STEPS = ["pending", "approved", "on_the_way", "delivered"];
+
+const STEP_SHORT_LABELS = {
+  pending: "נשלח",
+  approved: "אושר",
+  on_the_way: "בדרך",
+  delivered: "נמסר",
+};
 
 const STATUS_LABELS = {
   pending: "ממתין לאישור המשלוחן",
@@ -122,162 +133,160 @@ function DeliveryForm() {
     });
   }
 
-  return (
-    <main className="delivery-management" dir="rtl">
-      <header className="delivery-header">
-        <h1>ניהול משלוחים</h1>
-        <p>יצירת בקשות משלוח ומעקב אחר ביצוען</p>
-      </header>
+  function Field({ name, label, type = "text", wide = false, full = false, required = true, dir }) {
+    return (
+      <label className={`adm-field ${wide ? "adm-field-wide" : ""} ${full ? "adm-field-full" : ""}`}>
+        <span>
+          {label}
+          {required && <em aria-hidden="true"> *</em>}
+        </span>
+        <input
+          name={name}
+          type={type}
+          value={formData[name]}
+          onChange={handleChange}
+          required={required}
+          dir={dir}
+        />
+      </label>
+    );
+  }
 
-      <section className="delivery-form-card">
-        <h2>פתיחת משלוח חדש</h2>
+  return (
+    <div className="adm dlv">
+      <section className="adm-card dlv-form">
+        <div className="settings-section-head">
+          <span className="settings-badge settings-badge-mint">＋</span>
+          <div>
+            <h2 className="adm-card-title">פתיחת משלוח חדש</h2>
+            <p>הבקשה נשלחת למייל המשלוחן שמוגדר בהגדרות המערכת</p>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="delivery-form-grid">
-            <label>
-              שם המקבל *
-              <input
-                name="recipientName"
-                value={formData.recipientName}
-                onChange={handleChange}
-                required
-              />
-            </label>
+          <div className="adm-grid">
+            {Field({ name: "recipientName", label: "שם המקבל" })}
+            {Field({ name: "phone", label: "טלפון", type: "tel", dir: "ltr" })}
+            {Field({ name: "deliveryDate", label: "תאריך משלוח", type: "date" })}
+            {Field({ name: "city", label: "עיר" })}
+            {Field({ name: "address", label: "כתובת מלאה", wide: true })}
+            {Field({ name: "items", label: "פריטים למשלוח", full: true })}
 
-            <label>
-              טלפון *
-              <input
-                name="phone"
-                type="tel"
-                value={formData.phone}
+            <label className="adm-field adm-field-full">
+              <span>הערות למשלוח</span>
+              <textarea
+                name="notes"
+                value={formData.notes}
                 onChange={handleChange}
-                required
-              />
-            </label>
-
-            <label>
-              עיר *
-              <input
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                required
-              />
-            </label>
-
-            <label>
-              כתובת מלאה *
-              <input
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-              />
-            </label>
-
-            <label>
-              תאריך משלוח *
-              <input
-                name="deliveryDate"
-                type="date"
-                value={formData.deliveryDate}
-                onChange={handleChange}
-                required
-              />
-            </label>
-
-            <label>
-              פריטים למשלוח *
-              <input
-                name="items"
-                value={formData.items}
-                onChange={handleChange}
-                required
+                rows={3}
               />
             </label>
           </div>
 
-          <label className="delivery-full-width">
-            הערות למשלוח
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              rows={3}
-            />
-          </label>
-
           {error && (
-            <p className="status-message error">{error}</p>
+            <p className="hp-alert hp-alert-error" role="alert">
+              <span aria-hidden="true">!</span>
+              {error}
+            </p>
           )}
 
           {message && (
-            <p className="status-message">{message}</p>
+            <p className="hp-alert hp-alert-success" role="status">
+              <span aria-hidden="true">✓</span>
+              {message}
+            </p>
           )}
 
-          <button type="submit" disabled={saving}>
+          <button type="submit" className="hp-btn hp-btn-purple" disabled={saving}>
             {saving ? "שולח בקשה..." : "שליחת בקשת משלוח"}
           </button>
         </form>
       </section>
 
-      <section className="delivery-list-section">
-        <div className="delivery-list-header">
-          <h2>מעקב משלוחים</h2>
-          <span>הנתונים מתעדכנים אוטומטית</span>
+      <section className="dlv-tracking">
+        <div className="dlv-tracking-head">
+          <h2 className="adm-card-title">מעקב משלוחים</h2>
+          <span className="dlv-live">
+            <span className="dlv-live-dot" aria-hidden="true" />
+            מתעדכן אוטומטית
+          </span>
         </div>
 
         {loading ? (
-          <p>טוען משלוחים...</p>
+          <p className="adm-state">טוען משלוחים...</p>
         ) : deliveries.length === 0 ? (
-          <p>עדיין לא נוצרו משלוחים.</p>
+          <p className="adm-state">עדיין לא נוצרו משלוחים.</p>
         ) : (
-          <div className="delivery-list">
-            {deliveries.map((delivery) => (
-              <article
-                className="delivery-item"
-                key={delivery._id}
-              >
-                <div className="delivery-item-header">
-                  <h3>{delivery.recipientName}</h3>
-                  <span className={`delivery-status ${delivery.status}`}>
-                    {STATUS_LABELS[delivery.status] || delivery.status}
-                  </span>
-                </div>
+          <div className="dlv-list">
+            {deliveries.map((delivery) => {
+              const stepIndex = STATUS_STEPS.indexOf(delivery.status);
 
-                <p><strong>טלפון:</strong> {delivery.phone}</p>
-                <p>
-                  <strong>כתובת:</strong>{" "}
-                  {delivery.city}, {delivery.address}
-                </p>
-                <p>
-                  <strong>תאריך משלוח:</strong>{" "}
-                  {formatDate(delivery.deliveryDate)}
-                </p>
-                <p><strong>פריטים:</strong> {delivery.items}</p>
+              return (
+                <article className="dlv-item" key={delivery._id}>
+                  <div className="dlv-item-head">
+                    <div>
+                      <h3>{delivery.recipientName}</h3>
+                      <span className="dlv-address">
+                        {delivery.city}, {delivery.address}
+                      </span>
+                    </div>
+                    <span className={`adm-tag dlv-tag-${delivery.status}`}>
+                      {STATUS_LABELS[delivery.status] || delivery.status}
+                    </span>
+                  </div>
 
-                {delivery.notes && (
-                  <p><strong>הערות:</strong> {delivery.notes}</p>
-                )}
+                  {/* פס התקדמות */}
+                  <ol className="dlv-steps" aria-label="שלבי המשלוח">
+                    {STATUS_STEPS.map((step, index) => (
+                      <li
+                        key={step}
+                        className={index <= stepIndex ? "is-done" : ""}
+                        aria-current={index === stepIndex ? "step" : undefined}
+                      >
+                        <span className="dlv-step-dot" aria-hidden="true">
+                          {index < stepIndex || (step === "delivered" && index === stepIndex) ? "✓" : index + 1}
+                        </span>
+                        {STEP_SHORT_LABELS[step]}
+                      </li>
+                    ))}
+                  </ol>
 
-                {delivery.estimatedArrival && (
-                  <p>
-                    <strong>זמן הגעה משוער:</strong>{" "}
-                    {formatDate(delivery.estimatedArrival)}
-                  </p>
-                )}
+                  <dl className="dlv-details">
+                    <div>
+                      <dt>טלפון</dt>
+                      <dd dir="ltr">{delivery.phone}</dd>
+                    </div>
+                    <div>
+                      <dt>תאריך משלוח</dt>
+                      <dd>{formatDate(delivery.deliveryDate)}</dd>
+                    </div>
+                    <div className="dlv-details-wide">
+                      <dt>פריטים</dt>
+                      <dd>{delivery.items}</dd>
+                    </div>
+                    {delivery.notes && (
+                      <div className="dlv-details-wide">
+                        <dt>הערות</dt>
+                        <dd>{delivery.notes}</dd>
+                      </div>
+                    )}
+                    {delivery.estimatedArrival && (
+                      <div>
+                        <dt>הגעה משוערת</dt>
+                        <dd>{formatDate(delivery.estimatedArrival)}</dd>
+                      </div>
+                    )}
+                    {delivery.deliveredAt && (
+                      <div>
+                        <dt>זמן מסירה</dt>
+                        <dd>{formatDate(delivery.deliveredAt)}</dd>
+                      </div>
+                    )}
+                  </dl>
 
-                {delivery.deliveredAt && (
-                  <p>
-                    <strong>זמן מסירה:</strong>{" "}
-                    {formatDate(delivery.deliveredAt)}
-                  </p>
-                )}
-
-                {delivery.deliveryPhoto && (
-                  <div className="delivery-photo">
-                    <strong>תמונת המסירה:</strong>
+                  {delivery.deliveryPhoto && (
                     <a
+                      className="dlv-photo"
                       href={`http://localhost:7001${delivery.deliveryPhoto}`}
                       target="_blank"
                       rel="noreferrer"
@@ -286,15 +295,16 @@ function DeliveryForm() {
                         src={`http://localhost:7001${delivery.deliveryPhoto}`}
                         alt="תמונת המשלוח לאחר מסירה"
                       />
+                      <span>תמונת המסירה</span>
                     </a>
-                  </div>
-                )}
-              </article>
-            ))}
+                  )}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }
 

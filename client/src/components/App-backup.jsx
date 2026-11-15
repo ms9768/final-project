@@ -386,7 +386,6 @@ function App() {
               סינון לפי מסלול
               <select value={track} onChange={(event) => setTrack(event.target.value)}>
                 <option value="">כל המסלולים</option>
-                <option value="פיתוח">פיתוח</option>
                 <option value="ארוך">מסלול ארוך</option>
                 <option value="קצר">מסלול קצר</option>
                 <option value="קיץ">מסלול קיץ</option>
@@ -468,7 +467,6 @@ function App() {
                     required
                   >
                     <option value="">בחירת מסלול</option>
-                    <option value="פיתוח">פיתוח</option>
                     <option value="ארוך">ארוך</option>
                     <option value="קצר">קצר</option>
                     <option value="קיץ">קיץ</option>

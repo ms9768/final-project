@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import "./AdminPages.css";
 
 const API_URL = "http://localhost:7001/api/systemsettings";
 
@@ -16,6 +17,7 @@ function SystemSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -50,6 +52,7 @@ function SystemSettings() {
       });
     } catch (error) {
       setMessage(error.message);
+      setMessageIsError(true);
     } finally {
       setLoading(false);
     }
@@ -117,107 +120,114 @@ function SystemSettings() {
       });
 
       setMessage("ההגדרות נשמרו בהצלחה!");
+      setMessageIsError(false);
     } catch (error) {
       setMessage(error.message);
+      setMessageIsError(true);
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <p>טוען הגדרות...</p>;
+  if (loading) return <p className="adm-state">טוען הגדרות...</p>;
+
+  // שדה מספר עם סימן ₪ בצד
+  function MoneyField({ name, label, hint }) {
+    return (
+      <label className="adm-field">
+        <span>{label}</span>
+        <div className="adm-money">
+          <input
+            type="number"
+            name={name}
+            min="0"
+            step="0.01"
+            value={settings[name]}
+            onChange={handleChange}
+            required
+          />
+          <em aria-hidden="true">₪</em>
+        </div>
+        {hint && <small>{hint}</small>}
+      </label>
+    );
+  }
 
   return (
-    <section className="settings-panel">
-      <h2>ניהול תעריפים ותקציבים</h2>
+    <form className="adm settings" onSubmit={handleSave}>
+      <section className="adm-card settings-section">
+        <div className="settings-section-head">
+          <span className="settings-badge settings-badge-mint">₪</span>
+          <div>
+            <h2 className="adm-card-title">תשלום למנחות</h2>
+            <p>הסכום שמשולם על כל פגישה שאושרה</p>
+          </div>
+        </div>
 
-      <form onSubmit={handleSave}>
-        <label>
-          תקציב כיבוד למשתתף (₪)
-          <input
-            type="number"
-            name="refreshmentsBudgetPerParticipant"
-            min="0"
-            step="0.01"
-            value={settings.refreshmentsBudgetPerParticipant}
-            onChange={handleChange}
-            required
-          />
-        </label>
+        <div className="adm-grid">
+          {MoneyField({ name: "youngFacilitatorPaymentPerMeeting", label: "מנחה צעירה – לפגישה" })}
+          {MoneyField({ name: "seniorFacilitatorPaymentPerMeeting", label: "מנחה בוגרת – לפגישה" })}
+          {MoneyField({
+            name: "seniorProlongedConversationBonus",
+            label: "תוספת לשיחה ממושכת",
+            hint: "למנחה בוגרת בלבד",
+          })}
+        </div>
+      </section>
 
-        <label>
-          תשלום למנחה צעירה עבור פגישה (₪)
-          <input
-            type="number"
-            name="youngFacilitatorPaymentPerMeeting"
-            min="0"
-            step="0.01"
-            value={settings.youngFacilitatorPaymentPerMeeting}
-            onChange={handleChange}
-            required
-          />
-        </label>
+      <section className="adm-card settings-section">
+        <div className="settings-section-head">
+          <span className="settings-badge settings-badge-yellow">☕</span>
+          <div>
+            <h2 className="adm-card-title">תקציבים</h2>
+            <p>כיבוד ושכירות לכל פגישה</p>
+          </div>
+        </div>
 
-        <label>
-          תשלום למנחה בוגרת עבור פגישה (₪)
-          <input
-            type="number"
-            name="seniorFacilitatorPaymentPerMeeting"
-            min="0"
-            step="0.01"
-            value={settings.seniorFacilitatorPaymentPerMeeting}
-            onChange={handleChange}
-            required
-          />
-        </label>
+        <div className="adm-grid">
+          {MoneyField({ name: "refreshmentsBudgetPerParticipant", label: "תקציב כיבוד למשתתף" })}
+          {MoneyField({ name: "rentalPaymentPerMeeting", label: "תשלום שכירות לפגישה" })}
+        </div>
+      </section>
 
-        <label>
-          תוספת למנחה בוגרת עבור שיחה ממושכת (₪)
-          <input
-            type="number"
-            name="seniorProlongedConversationBonus"
-            min="0"
-            step="0.01"
-            value={settings.seniorProlongedConversationBonus}
-            onChange={handleChange}
-            required
-          />
-        </label>
+      <section className="adm-card settings-section">
+        <div className="settings-section-head">
+          <span className="settings-badge settings-badge-purple">✉</span>
+          <div>
+            <h2 className="adm-card-title">הגדרות משלוחים</h2>
+            <p>לאן נשלחים טפסי המשלוח</p>
+          </div>
+        </div>
 
-        <label>
-          תשלום שכירות עבור כל פגישה (₪)
-          <input
-            type="number"
-            name="rentalPaymentPerMeeting"
-            min="0"
-            step="0.01"
-            value={settings.rentalPaymentPerMeeting}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <hr />
-
-        <h3>הגדרות משלוחים</h3>
-
-        <label>
-          כתובת מייל של המשלוחן
+        <label className="adm-field">
+          <span>כתובת מייל של המשלוחן</span>
           <input
             type="email"
             name="deliveryEmail"
             value={settings.deliveryEmail}
             onChange={handleChange}
             placeholder="delivery@example.com"
+            dir="ltr"
           />
         </label>
+      </section>
 
-        <button type="submit" disabled={saving}>
+      <div className="settings-footer">
+        {message && (
+          <p
+            className={`hp-alert ${messageIsError ? "hp-alert-error" : "hp-alert-success"}`}
+            role={messageIsError ? "alert" : "status"}
+          >
+            <span aria-hidden="true">{messageIsError ? "!" : "✓"}</span>
+            {message}
+          </p>
+        )}
+
+        <button type="submit" className="hp-btn hp-btn-purple" disabled={saving}>
           {saving ? "שומר..." : "שמירת הגדרות"}
         </button>
-      </form>
-
-      {message && <p>{message}</p>}
-    </section>
+      </div>
+    </form>
   );
 }
 
